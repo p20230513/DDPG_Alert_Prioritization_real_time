@@ -1,0 +1,999 @@
+[-50.165270375088184, -51.40648641562697, -51.7000813587903, -51.87017561855376, -54.69535098441397, -51.54923392269823, -50.81179366135132, -50.65959289014394, -57.63015779548296, -51.892580755661086, -50.00252139152717, -57.77641634439959, -57.926016314988374, -51.31054107801472, -52.54414932022733, -53.20646425655864, -52.73348255022308, -54.53638144420572, -53.82239477837539, -51.487074675118855]
+###########################################################################################
+Iteration 0
+Current payoff matrix:
+[[-43.13452081]]
+Attacker's mixed strategy:
+[1.0]
+Defender's mixed strategy:
+[1.0]
+
+WARNING: The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+If you depend on functionality not listed there, please file an issue.
+
+attack-11-0_0
+defend-11-0_0
+attack-11-0_1
+defend-11-0_1
+###########################################################################################
+Iteration 1
+Current payoff matrix:
+[[-43.13452081 -57.77641711]
+ [-43.3343812  -57.97657895]]
+Attacker's mixed strategy:
+[7.593272911488058e-09, 1.0000000022181699]
+Defender's mixed strategy:
+[0.9999999991388926, 7.318574324176165e-09]
+attack-11-1_0
+defend-11-1_0
+attack-11-1_1
+defend-11-1_1
+###########################################################################################
+Iteration 0
+Current payoff matrix:
+[[-42.76926795]]
+Attacker's mixed strategy:
+[1.0]
+Defender's mixed strategy:
+[1.0]
+
+WARNING: The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+If you depend on functionality not listed there, please file an issue.
+
+attack-17-0_0
+defend-17-0_0
+attack-17-0_1
+defend-17-0_1
+###########################################################################################
+Iteration 1
+Current payoff matrix:
+[[-42.76926795 -54.53638239]
+ [-43.20446668 -54.94102201]]
+Attacker's mixed strategy:
+[1.3070930317209879e-08, 0.9999999991147062]
+Defender's mixed strategy:
+[0.9999998450719054, 1.632177127556541e-07]
+attack-17-1_0
+defend-17-1_0
+attack-17-1_1
+defend-17-1_1
+###########################################################################################
+Iteration 0
+Current payoff matrix:
+[[-42.7081233]]
+Attacker's mixed strategy:
+[1.0]
+Defender's mixed strategy:
+[1.0]
+
+WARNING: The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+If you depend on functionality not listed there, please file an issue.
+
+attack-14-0_0
+defend-14-0_0
+attack-14-0_1
+defend-14-0_1
+###########################################################################################
+Iteration 1
+Current payoff matrix:
+[[-42.7081233  -52.54414934]
+ [-42.80335275 -52.99811547]]
+Attacker's mixed strategy:
+[3.419519731496652e-10, 0.9999999999782838]
+Defender's mixed strategy:
+[0.9999999997422893, 2.640142232192866e-10]
+attack-14-1_0
+defend-14-1_0
+attack-14-1_1
+defend-14-1_1
+###########################################################################################
+Iteration 0
+Current payoff matrix:
+[[-43.47386094]]
+Attacker's mixed strategy:
+[1.0]
+Defender's mixed strategy:
+[1.0]
+
+WARNING: The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+If you depend on functionality not listed there, please file an issue.
+
+attack-7-0_0
+defend-7-0_0
+attack-7-0_1
+defend-7-0_1
+###########################################################################################
+Iteration 1
+Current payoff matrix:
+[[-43.47386094 -50.65959292]
+ [-42.94764587 -51.19205499]]
+Attacker's mixed strategy:
+[2.6894979283745866e-10, 1.000000000178511]
+Defender's mixed strategy:
+[0.9999999757538472, 2.5040780289083095e-08]
+attack-7-1_0
+defend-7-1_0
+attack-7-1_1
+defend-7-1_1
+###########################################################################################
+Iteration 0
+Current payoff matrix:
+[[-42.74986939]]
+Attacker's mixed strategy:
+[1.0]
+Defender's mixed strategy:
+[1.0]
+
+WARNING: The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+If you depend on functionality not listed there, please file an issue.
+
+attack-10-0_0
+defend-10-0_0
+attack-10-0_1
+defend-10-0_1
+###########################################################################################
+Iteration 1
+Current payoff matrix:
+[[-42.74986939 -50.00252139]
+ [-42.92157613 -51.13298345]]
+Attacker's mixed strategy:
+[1.6846988713379312e-11, 0.9999999999934847]
+Defender's mixed strategy:
+[0.9999999999873554, 1.474804383036591e-11]
+attack-10-1_0
+defend-10-1_0
+attack-10-1_1
+defend-10-1_1
+###########################################################################################
+Iteration 0
+Current payoff matrix:
+[[-43.0442574]]
+Attacker's mixed strategy:
+[1.0]
+Defender's mixed strategy:
+[1.0]
+
+WARNING: The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+If you depend on functionality not listed there, please file an issue.
+
+attack-4-0_0
+defend-4-0_0
+attack-4-0_1
+defend-4-0_1
+###########################################################################################
+Iteration 1
+Current payoff matrix:
+[[-43.0442574  -54.79146961]
+ [-43.1075018  -54.69535104]]
+Attacker's mixed strategy:
+[8.252811787694219e-10, 0.9999999999501903]
+Defender's mixed strategy:
+[2.3829226311627674e-07, 0.9999997645365148]
+attack-4-1_0
+defend-4-1_0
+attack-4-1_1
+defend-4-1_1
+###########################################################################################
+Iteration 0
+Current payoff matrix:
+[[-42.49683172]]
+Attacker's mixed strategy:
+[1.0]
+Defender's mixed strategy:
+[1.0]
+
+WARNING: The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+If you depend on functionality not listed there, please file an issue.
+
+attack-1-0_0
+defend-1-0_0
+attack-1-0_1
+defend-1-0_1
+###########################################################################################
+Iteration 1
+Current payoff matrix:
+[[-42.49683172 -51.69336689]
+ [-42.53494391 -51.40648645]]
+Attacker's mixed strategy:
+[5.456815463190741e-10, 0.999999999946702]
+Defender's mixed strategy:
+[2.7963733101683143e-09, 0.9999999972374798]
+attack-1-1_0
+defend-1-1_0
+attack-1-1_1
+defend-1-1_1
+###########################################################################################
+Iteration 0
+Current payoff matrix:
+[[-42.86992294]]
+Attacker's mixed strategy:
+[1.0]
+Defender's mixed strategy:
+[1.0]
+
+WARNING: The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+If you depend on functionality not listed there, please file an issue.
+
+attack-13-0_0
+defend-13-0_0
+attack-13-0_1
+defend-13-0_1
+###########################################################################################
+Iteration 1
+Current payoff matrix:
+[[-42.86992294 -51.43589102]
+ [-42.91046614 -51.31054119]]
+Attacker's mixed strategy:
+[1.8138756513555296e-09, 0.9999999997820068]
+Defender's mixed strategy:
+[7.850808610900865e-08, 0.9999999219158807]
+attack-13-1_0
+defend-13-1_0
+attack-13-1_1
+defend-13-1_1
+###########################################################################################
+Iteration 0
+Current payoff matrix:
+[[-43.10587504]]
+Attacker's mixed strategy:
+[1.0]
+Defender's mixed strategy:
+[1.0]
+
+WARNING: The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+If you depend on functionality not listed there, please file an issue.
+
+attack-12-0_0
+defend-12-0_0
+attack-12-0_1
+defend-12-0_1
+###########################################################################################
+Iteration 1
+Current payoff matrix:
+[[-43.10587504 -50.17273885]
+ [-42.98339063 -50.46143134]]
+Attacker's mixed strategy:
+[5.360830194765309e-10, 0.9999999998944155]
+Defender's mixed strategy:
+[0.9999999926115547, 7.490763506137101e-09]
+attack-12-1_0
+defend-12-1_0
+attack-12-1_1
+defend-12-1_1
+###########################################################################################
+Iteration 2
+Current payoff matrix:
+[[-43.10587504 -50.17273885 -50.21500146]
+ [-42.98339063 -50.46143134 -50.40155581]
+ [-42.78496196 -50.20984955 -50.53551273]]
+Attacker's mixed strategy:
+[3.838171543842329e-09, 5.726981837930138e-07, 0.9999994309638077]
+Defender's mixed strategy:
+[0.9999998979749949, 8.96294359870663e-08, 1.4836527864639335e-08]
+attack-12-2_0
+defend-12-2_0
+attack-12-2_1
+defend-12-2_1
+###########################################################################################
+Iteration 3
+Current payoff matrix:
+[[-43.10587504 -50.17273885 -50.21500146 -58.38940986]
+ [-42.98339063 -50.46143134 -50.40155581 -58.2132255 ]
+ [-42.78496196 -50.20984955 -50.53551273 -58.46814413]
+ [-43.00392854 -50.3986549  -50.59566179 -57.92601643]]
+Attacker's mixed strategy:
+[1.010515894608134e-09, 1.979418148601142e-09, 2.010710471009661e-09, 0.9999999995883166]
+Defender's mixed strategy:
+[7.760991443453061e-09, 1.1213529459294534e-08, 8.624504830453422e-09, 0.9999999740798339]
+attack-12-3_0
+defend-12-3_0
+attack-12-3_1
+defend-12-3_1
+###########################################################################################
+Iteration 0
+Current payoff matrix:
+[[-42.74474631]]
+Attacker's mixed strategy:
+[1.0]
+Defender's mixed strategy:
+[1.0]
+
+WARNING: The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+If you depend on functionality not listed there, please file an issue.
+
+attack-15-0_0
+defend-15-0_0
+attack-15-0_1
+defend-15-0_1
+###########################################################################################
+Iteration 1
+Current payoff matrix:
+[[-42.74474631 -50.51608574]
+ [-42.89822055 -49.72839064]]
+Attacker's mixed strategy:
+[6.498006790203698e-11, 0.9999999999741672]
+Defender's mixed strategy:
+[1.6401708418087387e-12, 1.0000000000152793]
+attack-15-1_0
+defend-15-1_0
+attack-15-1_1
+defend-15-1_1
+###########################################################################################
+Iteration 2
+Current payoff matrix:
+[[-42.74474631 -50.51608574 -51.1601742 ]
+ [-42.89822055 -49.72839064 -51.20666004]
+ [-43.37018296 -50.46272078 -51.35906666]]
+Attacker's mixed strategy:
+[3.385794187724895e-10, 5.502619076871202e-09, 0.9999999949042592]
+Defender's mixed strategy:
+[0.9999999931866774, 6.1997908109300995e-09, 6.718378440020877e-10]
+attack-15-2_0
+defend-15-2_0
+attack-15-2_1
+defend-15-2_1
+###########################################################################################
+Iteration 3
+Current payoff matrix:
+[[-42.74474631 -50.51608574 -51.1601742  -53.24824161]
+ [-42.89822055 -49.72839064 -51.20666004 -53.20646803]
+ [-43.37018296 -50.46272078 -51.35906666 -53.35817221]
+ [-43.25989336 -50.42329577 -51.49976003 -53.27017497]]
+Attacker's mixed strategy:
+[4.491919665630103e-08, 1.1999763234710706e-07, 2.1064260606193194e-07, 0.9999998174515317]
+Defender's mixed strategy:
+[3.208929856425195e-05, 0.9999668975737596, 1.1482589456191533e-06, 4.6214093912952995e-08]
+attack-15-3_0
+defend-15-3_0
+attack-15-3_1
+defend-15-3_1
+###########################################################################################
+Iteration 0
+Current payoff matrix:
+[[-42.84269471]]
+Attacker's mixed strategy:
+[1.0]
+Defender's mixed strategy:
+[1.0]
+
+WARNING: The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+If you depend on functionality not listed there, please file an issue.
+
+attack-5-0_0
+defend-5-0_0
+attack-5-0_1
+defend-5-0_1
+###########################################################################################
+Iteration 1
+Current payoff matrix:
+[[-42.84269471 -50.4206409 ]
+ [-42.63351543 -50.5366402 ]]
+Attacker's mixed strategy:
+[5.085828367465817e-10, 0.9999999999012086]
+Defender's mixed strategy:
+[0.9999994832439942, 5.195638448337826e-07]
+attack-5-1_0
+defend-5-1_0
+attack-5-1_1
+defend-5-1_1
+###########################################################################################
+Iteration 2
+Current payoff matrix:
+[[-42.84269471 -50.4206409  -51.58646062]
+ [-42.63351543 -50.5366402  -51.58063301]
+ [-42.67275095 -50.50296054 -51.58222537]]
+Attacker's mixed strategy:
+[2.134329498102043e-10, 1.6647613392174687e-09, 0.9999999985876574]
+Defender's mixed strategy:
+[2.9344887633874133e-05, 0.9999698623578871, 8.11321493929765e-07]
+attack-5-2_0
+defend-5-2_0
+attack-5-2_1
+defend-5-2_1
+###########################################################################################
+Iteration 3
+Current payoff matrix:
+[[-42.84269471 -50.4206409  -51.58646062 -50.84351223]
+ [-42.63351543 -50.5366402  -51.58063301 -51.11839399]
+ [-42.67275095 -50.50296054 -51.58222537 -50.78861132]
+ [-42.48823102 -50.79704574 -51.54923392 -51.14973308]]
+Attacker's mixed strategy:
+[6.466150131631286e-12, 1.296112950158039e-10, 0.9999999996639737, 2.3163243807140958e-10]
+Defender's mixed strategy:
+[2.3684665668040355e-12, 1.5676083223010993e-09, 8.593161907324271e-13, 0.9999999984407411]
+attack-5-3_0
+defend-5-3_0
+attack-5-3_1
+defend-5-3_1
+###########################################################################################
+Iteration 0
+Current payoff matrix:
+[[-42.7554707]]
+Attacker's mixed strategy:
+[1.0]
+Defender's mixed strategy:
+[1.0]
+
+WARNING: The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+If you depend on functionality not listed there, please file an issue.
+
+attack-18-0_0
+defend-18-0_0
+attack-18-0_1
+defend-18-0_1
+###########################################################################################
+Iteration 1
+Current payoff matrix:
+[[-42.7554707  -50.23075048]
+ [-42.72492812 -50.39894528]]
+Attacker's mixed strategy:
+[1.9745834446739316e-09, 0.9999999996764832]
+Defender's mixed strategy:
+[0.9999999496833036, 5.068538420708608e-08]
+attack-18-1_0
+defend-18-1_0
+attack-18-1_1
+defend-18-1_1
+###########################################################################################
+Iteration 2
+Current payoff matrix:
+[[-42.7554707  -50.23075048 -53.97059973]
+ [-42.72492812 -50.39894528 -53.83338146]
+ [-43.09263944 -50.18313183 -53.82239487]]
+Attacker's mixed strategy:
+[1.151138673203579e-09, 3.619383349952073e-09, 0.999999998267779]
+Defender's mixed strategy:
+[2.3280328596489323e-08, 4.860452845988787e-07, 0.9999994918422401]
+attack-18-2_0
+defend-18-2_0
+attack-18-2_1
+defend-18-2_1
+###########################################################################################
+Iteration 0
+Current payoff matrix:
+[[-42.90496087]]
+Attacker's mixed strategy:
+[1.0]
+Defender's mixed strategy:
+[1.0]
+
+WARNING: The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+If you depend on functionality not listed there, please file an issue.
+
+attack-9-0_0
+defend-9-0_0
+attack-9-0_1
+defend-9-0_1
+###########################################################################################
+Iteration 1
+Current payoff matrix:
+[[-42.90496087 -50.47629877]
+ [-43.06253934 -50.10854558]]
+Attacker's mixed strategy:
+[2.6310018197958933e-10, 0.9999999999441967]
+Defender's mixed strategy:
+[1.7750016637699528e-10, 0.9999999999102385]
+attack-9-1_0
+defend-9-1_0
+attack-9-1_1
+defend-9-1_1
+###########################################################################################
+Iteration 2
+Current payoff matrix:
+[[-42.90496087 -50.47629877 -52.12813264]
+ [-43.06253934 -50.10854558 -51.89258093]
+ [-42.91462338 -50.35753338 -52.12212728]]
+Attacker's mixed strategy:
+[2.3128754455500377e-09, 1.1350443086450255e-08, 0.9999999912210179]
+Defender's mixed strategy:
+[1.744466106169567e-06, 0.9999983110739149, 1.0470510868175402e-08]
+attack-9-2_0
+defend-9-2_0
+attack-9-2_1
+defend-9-2_1
+###########################################################################################
+Iteration 0
+Current payoff matrix:
+[[-42.68668532]]
+Attacker's mixed strategy:
+[1.0]
+Defender's mixed strategy:
+[1.0]
+
+WARNING: The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+If you depend on functionality not listed there, please file an issue.
+
+attack-8-0_0
+defend-8-0_0
+attack-8-0_1
+defend-8-0_1
+###########################################################################################
+Iteration 1
+Current payoff matrix:
+[[-42.68668532 -51.53655792]
+ [-42.62614281 -51.44290368]]
+Attacker's mixed strategy:
+[4.7749844901298516e-09, 0.999999999537988]
+Defender's mixed strategy:
+[3.6776619062211345e-09, 0.9999999963419067]
+attack-8-1_0
+defend-8-1_0
+attack-8-1_1
+defend-8-1_1
+###########################################################################################
+Iteration 2
+Current payoff matrix:
+[[-42.68668532 -51.53655792 -57.82054754]
+ [-42.62614281 -51.44290368 -57.63016034]
+ [-42.89569982 -51.76546568 -57.73661443]]
+Attacker's mixed strategy:
+[2.0628301064028188e-08, 5.6267806225631084e-08, 1.0000000142279166]
+Defender's mixed strategy:
+[7.43872558852157e-08, 0.9999998923593283, 3.6807101080531825e-08]
+attack-8-2_0
+defend-8-2_0
+attack-8-2_1
+defend-8-2_1
+###########################################################################################
+Iteration 0
+Current payoff matrix:
+[[-42.60235955]]
+Attacker's mixed strategy:
+[1.0]
+Defender's mixed strategy:
+[1.0]
+
+WARNING: The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+If you depend on functionality not listed there, please file an issue.
+
+attack-6-0_0
+defend-6-0_0
+attack-6-0_1
+defend-6-0_1
+###########################################################################################
+Iteration 1
+Current payoff matrix:
+[[-42.60235955 -50.23294782]
+ [-43.17091172 -50.47649001]]
+Attacker's mixed strategy:
+[6.106686574556965e-12, 0.9999999999972806]
+Defender's mixed strategy:
+[0.9999999918101892, 8.287631846552323e-09]
+attack-6-1_0
+defend-6-1_0
+attack-6-1_1
+defend-6-1_1
+###########################################################################################
+Iteration 2
+Current payoff matrix:
+[[-42.60235955 -50.23294782 -50.61267258]
+ [-43.17091172 -50.47649001 -50.51125763]
+ [-42.98361064 -49.98600574 -50.3751824 ]]
+Attacker's mixed strategy:
+[8.864627928767435e-09, 1.0595776395996977e-07, 0.9999998996815633]
+Defender's mixed strategy:
+[4.515958485660051e-09, 3.571729049827508e-10, 0.9999999957994389]
+attack-6-2_0
+defend-6-2_0
+attack-6-2_1
+defend-6-2_1
+###########################################################################################
+Iteration 3
+Current payoff matrix:
+[[-42.60235955 -50.23294782 -50.61267258 -51.0590047 ]
+ [-43.17091172 -50.47649001 -50.51125763 -50.83184283]
+ [-42.98361064 -49.98600574 -50.3751824  -50.81179366]
+ [-43.09177698 -50.4197839  -50.35942092 -51.14962492]]
+Attacker's mixed strategy:
+[3.809589385736534e-12, 1.243078285494639e-11, 4.240355801667867e-11, 0.9999999999601893]
+Defender's mixed strategy:
+[6.058550084583905e-10, 2.9159592874720913e-10, 0.9999999986495464, 5.30018936277222e-10]
+attack-6-3_0
+defend-6-3_0
+attack-6-3_1
+defend-6-3_1
+###########################################################################################
+Iteration 0
+Current payoff matrix:
+[[-42.82935]]
+Attacker's mixed strategy:
+[1.0]
+Defender's mixed strategy:
+[1.0]
+
+WARNING: The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+If you depend on functionality not listed there, please file an issue.
+
+attack-0-0_0
+defend-0-0_0
+attack-0-0_1
+defend-0-0_1
+###########################################################################################
+Iteration 1
+Current payoff matrix:
+[[-42.82935    -50.0935762 ]
+ [-43.0368088  -50.28242478]]
+Attacker's mixed strategy:
+[1.2573568271671205e-08, 0.9999999976893732]
+Defender's mixed strategy:
+[0.9999999999712755, 3.460121169362187e-11]
+attack-0-1_0
+defend-0-1_0
+attack-0-1_1
+defend-0-1_1
+###########################################################################################
+Iteration 2
+Current payoff matrix:
+[[-42.82935    -50.0935762  -50.24455024]
+ [-43.0368088  -50.28242478 -50.24294766]
+ [-42.51902738 -50.18537422 -49.91375419]]
+Attacker's mixed strategy:
+[8.037933069368372e-08, 0.7827739026910193, 0.2172261545360545]
+Defender's mixed strategy:
+[0.6427444799246286, 6.90476424567391e-08, 0.35725545408992404]
+attack-0-2_0
+defend-0-2_0
+attack-0-2_1
+defend-0-2_1
+###########################################################################################
+Iteration 3
+Current payoff matrix:
+[[-42.82935    -50.0935762  -50.24455024 -50.2914931 ]
+ [-43.0368088  -50.28242478 -50.24294766 -50.34417603]
+ [-42.51902738 -50.18537422 -49.91375419 -50.12987612]
+ [-42.67960345 -50.68523908 -49.88261821 -50.68350057]]
+Attacker's mixed strategy:
+[3.879979640165799e-12, 0.6377561779774986, 2.0088275502227105e-11, 0.3622438220096643]
+Defender's mixed strategy:
+[0.21899924321418457, 7.622023046010708e-07, 0.7809999410897468, 8.945231081223158e-08]
+attack-0-3_0
+defend-0-3_0
+attack-0-3_1
+defend-0-3_1
+###########################################################################################
+Iteration 0
+Current payoff matrix:
+[[-42.78375662]]
+Attacker's mixed strategy:
+[1.0]
+Defender's mixed strategy:
+[1.0]
+
+WARNING: The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+If you depend on functionality not listed there, please file an issue.
+
+attack-2-0_0
+defend-2-0_0
+attack-2-0_1
+defend-2-0_1
+###########################################################################################
+Iteration 1
+Current payoff matrix:
+[[-42.78375662 -50.64903297]
+ [-42.87709339 -50.25277303]]
+Attacker's mixed strategy:
+[2.7253355288136107e-10, 0.999999999951995]
+Defender's mixed strategy:
+[5.687320404609178e-10, 0.999999999443905]
+attack-2-1_0
+defend-2-1_0
+attack-2-1_1
+defend-2-1_1
+###########################################################################################
+Iteration 2
+Current payoff matrix:
+[[-42.78375662 -50.64903297 -51.04051558]
+ [-42.87709339 -50.25277303 -51.2426955 ]
+ [-43.17586396 -50.29128841 -50.98385105]]
+Attacker's mixed strategy:
+[2.0803124071306813e-09, 1.310072880475963e-08, 0.9999999887145057]
+Defender's mixed strategy:
+[1.9042026259972678e-07, 3.1195548059618895e-08, 0.9999997800770665]
+attack-2-2_0
+defend-2-2_0
+attack-2-2_1
+defend-2-2_1
+###########################################################################################
+Iteration 3
+Current payoff matrix:
+[[-42.78375662 -50.64903297 -51.04051558 -51.8074456 ]
+ [-42.87709339 -50.25277303 -51.2426955  -51.80743719]
+ [-43.17586396 -50.29128841 -50.98385105 -51.70008142]
+ [-42.90357836 -50.58907811 -50.93762203 -52.21623565]]
+Attacker's mixed strategy:
+[6.925057466351675e-10, 4.210504283490065e-09, 5.652471543494467e-09, 0.9999999920772972]
+Defender's mixed strategy:
+[1.9734298526207323e-07, 2.2832008793314583e-07, 0.9999995355577403, 5.108461027257643e-08]
+attack-2-3_0
+defend-2-3_0
+attack-2-3_1
+defend-2-3_1
+###########################################################################################
+Iteration 0
+Current payoff matrix:
+[[-43.08805132]]
+Attacker's mixed strategy:
+[1.0]
+Defender's mixed strategy:
+[1.0]
+
+WARNING: The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+If you depend on functionality not listed there, please file an issue.
+
+attack-19-0_0
+defend-19-0_0
+attack-19-0_1
+defend-19-0_1
+###########################################################################################
+Iteration 1
+Current payoff matrix:
+[[-43.08805132 -50.30101091]
+ [-43.00431383 -50.14067175]]
+Attacker's mixed strategy:
+[5.787850799580877e-09, 0.9999999989038515]
+Defender's mixed strategy:
+[1.4185980890383935e-08, 0.9999999859293058]
+attack-19-1_0
+defend-19-1_0
+attack-19-1_1
+defend-19-1_1
+###########################################################################################
+Iteration 2
+Current payoff matrix:
+[[-43.08805132 -50.30101091 -50.51861676]
+ [-43.00431383 -50.14067175 -50.17335945]
+ [-42.85708282 -50.57389705 -50.38217556]]
+Attacker's mixed strategy:
+[8.698780521663466e-08, 1.6964466316803997e-05, 0.9999830880393259]
+Defender's mixed strategy:
+[5.1492004898506686e-08, 0.9999998160676455, 1.363590844455936e-07]
+attack-19-2_0
+defend-19-2_0
+attack-19-2_1
+defend-19-2_1
+###########################################################################################
+Iteration 3
+Current payoff matrix:
+[[-43.08805132 -50.30101091 -50.51861676 -51.80693491]
+ [-43.00431383 -50.14067175 -50.17335945 -51.92472778]
+ [-42.85708282 -50.57389705 -50.38217556 -51.4870749 ]
+ [-42.76023759 -50.2512486  -50.57201847 -51.53722605]]
+Attacker's mixed strategy:
+[3.4991763387291707e-09, 4.8472774757682036e-08, 2.3747887190537612e-08, 0.999999933397877]
+Defender's mixed strategy:
+[1.6007893109517117e-11, 2.3101312136170176e-11, 0.999999999969074, 3.0337311820592863e-12]
+attack-19-3_0
+defend-19-3_0
+attack-19-3_1
+defend-19-3_1
+###########################################################################################
+Iteration 0
+Current payoff matrix:
+[[-42.86718772]]
+Attacker's mixed strategy:
+[1.0]
+Defender's mixed strategy:
+[1.0]
+
+WARNING: The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+If you depend on functionality not listed there, please file an issue.
+
+attack-3-0_0
+defend-3-0_0
+attack-3-0_1
+defend-3-0_1
+###########################################################################################
+Iteration 1
+Current payoff matrix:
+[[-42.86718772 -50.36452186]
+ [-42.74920618 -50.67579105]]
+Attacker's mixed strategy:
+[3.9066283498690567e-10, 0.9999999999325042]
+Defender's mixed strategy:
+[0.9999999965287731, 3.5219084325977807e-09]
+attack-3-1_0
+defend-3-1_0
+attack-3-1_1
+defend-3-1_1
+###########################################################################################
+Iteration 2
+Current payoff matrix:
+[[-42.86718772 -50.36452186 -50.29327087]
+ [-42.74920618 -50.67579105 -50.52352047]
+ [-42.69812351 -49.76700712 -50.23529006]]
+Attacker's mixed strategy:
+[4.890009545383554e-12, 9.118060518698581e-12, 0.9999999999984697]
+Defender's mixed strategy:
+[4.285765366081111e-09, 9.088772518552315e-08, 0.9999999116227873]
+attack-3-2_0
+defend-3-2_0
+attack-3-2_1
+defend-3-2_1
+###########################################################################################
+Iteration 3
+Current payoff matrix:
+[[-42.86718772 -50.36452186 -50.29327087 -50.78590099]
+ [-42.74920618 -50.67579105 -50.52352047 -50.93834181]
+ [-42.69812351 -49.76700712 -50.23529006 -50.5762704 ]
+ [-42.40471633 -50.36394896 -49.94368809 -50.22661494]]
+Attacker's mixed strategy:
+[1.2729018548431772e-09, 0.3693813516300295, 5.7757084918097376e-08, 0.6306185937645001]
+Defender's mixed strategy:
+[6.361693970494213e-08, 3.52980574515211e-08, 0.14508177638104633, 0.8549181406779502]
+attack-3-3_0
+defend-3-3_0
+attack-3-3_1
+defend-3-3_1
+###########################################################################################
+Iteration 4
+Current payoff matrix:
+[[-42.86718772 -50.36452186 -50.29327087 -50.78590099 -51.87017809]
+ [-42.74920618 -50.67579105 -50.52352047 -50.93834181 -52.31682635]
+ [-42.69812351 -49.76700712 -50.23529006 -50.5762704  -52.1624566 ]
+ [-42.40471633 -50.36394896 -49.94368809 -50.22661494 -52.10725939]
+ [-42.92853025 -50.14891335 -50.39842169 -50.56473188 -52.24946974]]
+Attacker's mixed strategy:
+[1.6603152600516874e-08, 1.2576379482238636e-07, 8.888641066223237e-08, 3.449669855189544e-07, 0.9999995461142835]
+Defender's mixed strategy:
+[0.9999994889597198, 3.4947411219259116e-07, 1.4221313489607977e-07, 1.6607317452777639e-07, 2.6781230871959473e-08]
+attack-3-4_0
+defend-3-4_0
+attack-3-4_1
+defend-3-4_1
+###########################################################################################
+Iteration 0
+Current payoff matrix:
+[[-43.04732764]]
+Attacker's mixed strategy:
+[1.0]
+Defender's mixed strategy:
+[1.0]
+
+WARNING: The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+If you depend on functionality not listed there, please file an issue.
+
+attack-16-0_0
+defend-16-0_0
+attack-16-0_1
+defend-16-0_1
+###########################################################################################
+Iteration 1
+Current payoff matrix:
+[[-43.04732764 -49.38910812]
+ [-42.62787445 -50.24045295]]
+Attacker's mixed strategy:
+[6.094906181137686e-10, 1.0000000002036533]
+Defender's mixed strategy:
+[0.9999999996556717, 3.7466751861642123e-10]
+attack-16-1_0
+defend-16-1_0
+attack-16-1_1
+defend-16-1_1
+###########################################################################################
+Iteration 2
+Current payoff matrix:
+[[-43.04732764 -49.38910812 -50.57144751]
+ [-42.62787445 -50.24045295 -50.64226513]
+ [-43.06716299 -50.36642698 -50.63463742]]
+Attacker's mixed strategy:
+[5.049384573030541e-09, 2.762905683091466e-08, 0.9999999765435792]
+Defender's mixed strategy:
+[0.9999997742310445, 2.2802212656399293e-07, 3.6924458588294474e-09]
+attack-16-2_0
+defend-16-2_0
+attack-16-2_1
+defend-16-2_1
+###########################################################################################
+Iteration 3
+Current payoff matrix:
+[[-43.04732764 -49.38910812 -50.57144751 -50.89847856]
+ [-42.62787445 -50.24045295 -50.64226513 -50.6049074 ]
+ [-43.06716299 -50.36642698 -50.63463742 -50.9840642 ]
+ [-43.21849339 -50.25596236 -50.54207462 -51.02522464]]
+Attacker's mixed strategy:
+[7.69568886469186e-12, 6.396907652693682e-11, 0.8056536849622102, 0.19434631499418992]
+Defender's mixed strategy:
+[0.1008135013364325, 0.8979912351018514, 6.343450943823085e-06, 0.0011891100931033904]
+attack-16-3_0
+defend-16-3_0
+attack-16-3_1
+defend-16-3_1
+###########################################################################################
+Iteration 4
+Current payoff matrix:
+[[-43.04732764 -49.38910812 -50.57144751 -50.89847856 -53.35266758]
+ [-42.62787445 -50.24045295 -50.64226513 -50.6049074  -52.98356771]
+ [-43.06716299 -50.36642698 -50.63463742 -50.9840642  -53.08786271]
+ [-43.21849339 -50.25596236 -50.54207462 -51.02522464 -53.08945957]
+ [-43.15617375 -50.20290421 -50.08239144 -51.01953138 -53.42735486]]
+Attacker's mixed strategy:
+[2.815821876939615e-08, 8.143921207833708e-08, 9.807193522044776e-08, 9.140874602468827e-08, 0.9999998609998514]
+Defender's mixed strategy:
+[1.409675229750448e-10, 0.9999999986975606, 1.0828384679762557e-09, 7.2373075033001935e-12, 1.0638043390623348e-10]
+attack-16-4_0
+defend-16-4_0
+attack-16-4_1
+defend-16-4_1
+###########################################################################################
+Iteration 5
+Current payoff matrix:
+[[-43.04732764 -49.38910812 -50.57144751 -50.89847856 -53.35266758
+  -52.76914169]
+ [-42.62787445 -50.24045295 -50.64226513 -50.6049074  -52.98356771
+  -52.93624475]
+ [-43.06716299 -50.36642698 -50.63463742 -50.9840642  -53.08786271
+  -53.14380342]
+ [-43.21849339 -50.25596236 -50.54207462 -51.02522464 -53.08945957
+  -52.7509017 ]
+ [-43.15617375 -50.20290421 -50.08239144 -51.01953138 -53.42735486
+  -52.45297931]
+ [-42.44597875 -50.45400766 -50.2000544  -50.40171033 -52.73348257
+  -52.69816905]]
+Attacker's mixed strategy:
+[1.5923398541362274e-10, 5.622732823053653e-10, 4.3722831461027824e-10, 5.762304002545682e-10, 0.9999999204806307, 7.884590108227821e-08]
+Defender's mixed strategy:
+[6.281144524361036e-12, 2.127955394656169e-09, 2.9523636191140647e-09, 7.245822395505247e-10, 4.907341449480159e-10, 0.9999999945155713]
+attack-16-5_0
+defend-16-5_0
+attack-16-5_1
+defend-16-5_1
