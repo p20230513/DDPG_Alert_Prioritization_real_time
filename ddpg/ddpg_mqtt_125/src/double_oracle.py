@@ -232,7 +232,7 @@ if __name__ == "__main__":
     logging.info("Experiment starts.")
     if len(sys.argv) < 5:
         print("python double_oracle.py [dataset] [def_budget] [adv_budget] [n_experiment]")
-        print("  dataset: 'suricata', 'fraud', 'snort', 'alert.json', or path to alert.json file")
+        print("  dataset: 'suricata', 'fraud', 'snort', 'alert.json', 'alert_json.txt', or path to alert file")
         sys.exit(1)
 
     model_name = sys.argv[1]
@@ -240,9 +240,15 @@ if __name__ == "__main__":
     adv_budget = float(sys.argv[3])
     n_experiment = int(sys.argv[4])
 
-    # Check if model_name is a path to alert.json file
-    if model_name.endswith('.json') or os.path.exists(model_name):
-        # Use alert.json file
+    # Check if model_name is a path to alert.json/alert_json.txt file
+    # Accept both .json and .txt extensions, or any existing file path
+    is_alert_file = (model_name.endswith('.json') or 
+                     model_name.endswith('.txt') or 
+                     'alert_json' in model_name.lower() or
+                     os.path.exists(model_name))
+    
+    if is_alert_file:
+        # Use alert.json/alert_json.txt file
         alert_file_path = model_name
         if not os.path.exists(alert_file_path):
             # Try default location
@@ -253,7 +259,7 @@ if __name__ == "__main__":
                 print(f"[ERROR] Alert file not found: {alert_file_path}")
                 print(f"[ERROR] Also tried default location: {default_path}")
                 sys.exit(1)
-        logging.info(f"Loading model from alert.json: {alert_file_path}")
+        logging.info(f"Loading model from alert file: {alert_file_path}")
         model = test_model_from_alerts(alert_file_path, def_budget, adv_budget)
     elif model_name == 'suricata':
         model = test_model_suricata(def_budget, adv_budget)
@@ -263,7 +269,7 @@ if __name__ == "__main__":
         model = test_model_snort(def_budget, adv_budget)
     else:
         print(f"[ERROR] Unknown dataset: {model_name}")
-        print("Supported datasets: 'suricata', 'fraud', 'snort', 'alert.json', or path to alert.json")
+        print("Supported datasets: 'suricata', 'fraud', 'snort', 'alert.json', 'alert_json.txt', or path to alert file")
         sys.exit(1)
 
     def evaluation(exper_index):

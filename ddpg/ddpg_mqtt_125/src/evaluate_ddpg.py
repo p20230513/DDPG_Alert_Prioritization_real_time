@@ -409,7 +409,7 @@ if __name__ == "__main__":
     logging.info("Experiment starts.")
     if len(sys.argv) < 8:
         print("python evaluate_ddpg.py [dataset] [defense] [def_budget] [estimate_adv_budget] [attack] [actual_adv_budget] [n_experiment]")
-        print("  dataset: 'snort', 'fraud', 'alert.json', or path to alert.json file")
+        print("  dataset: 'snort', 'fraud', 'alert.json', 'alert_json.txt', or path to alert file")
         sys.exit(1)
     model_name = sys.argv[1]
     defense = sys.argv[2]
@@ -419,10 +419,16 @@ if __name__ == "__main__":
     actual_adv_budget = int(sys.argv[6])
     n_experiment = int(sys.argv[7])
 
-    # Check if model_name is a path to alert.json file
+    # Check if model_name is a path to alert.json/alert_json.txt file
+    # Accept both .json and .txt extensions, or any existing file path
     is_alert_json = False
     alert_file_path = None
-    if model_name.endswith('.json') or os.path.exists(model_name):
+    is_alert_file = (model_name.endswith('.json') or 
+                     model_name.endswith('.txt') or 
+                     'alert_json' in model_name.lower() or
+                     os.path.exists(model_name))
+    
+    if is_alert_file:
         # Use alert.json file
         is_alert_json = True
         alert_file_path = model_name
@@ -450,7 +456,7 @@ if __name__ == "__main__":
         model_name_for_files = model_name
     else:
         print(f"[ERROR] Unknown dataset: {model_name}")
-        print("Supported datasets: 'snort', 'fraud', 'alert.json', or path to alert.json")
+        print("Supported datasets: 'snort', 'fraud', 'alert.json', 'alert_json.txt', or path to alert file")
         sys.exit(1)
     
     defense_strategies = []
