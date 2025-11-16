@@ -298,6 +298,18 @@ def test_attack_snort(model, state):
   alpha = [0.4,1]
   return alpha
 
+def test_model_from_alerts(alert_file_path, def_budget, adv_budget):
+  """
+  Create a test model from alert.json file (real-time data).
+  This function uses alert_json_loader to build the model dynamically.
+  :param alert_file_path: Path to alert.json file
+  :param def_budget: Defender budget
+  :param adv_budget: Adversary budget
+  :return: Model object
+  """
+  from alert_json_loader import create_model_from_alerts
+  return create_model_from_alerts(alert_file_path, def_budget, adv_budget)
+
 if __name__ == "__main__":
   model = test_model_snort(1000, 125)
   state = Model.State(model)

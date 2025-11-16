@@ -18,7 +18,6 @@ import pickle
 import sys
 import tensorflow as tf
 import os
-import pickle
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"]='2'
 
@@ -232,7 +231,8 @@ if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s / %(levelname)s: %(message)s', level=logging.DEBUG)
     logging.info("Experiment starts.")
     if len(sys.argv) < 5:
-        print("python do_h1_mul.py [model_name] [def_budget] [adv_budget] [n_experiment]")
+        print("python double_oracle.py [dataset] [def_budget] [adv_budget] [n_experiment]")
+        print("  dataset: 'suricata', 'fraud', 'snort', 'alert.json', or path to alert.json file")
         sys.exit(1)
 
     model_name = sys.argv[1]
@@ -240,12 +240,31 @@ if __name__ == "__main__":
     adv_budget = float(sys.argv[3])
     n_experiment = int(sys.argv[4])
 
-    if model_name == 'suricata':
+    # Check if model_name is a path to alert.json file
+    if model_name.endswith('.json') or os.path.exists(model_name):
+        # Use alert.json file
+        alert_file_path = model_name
+        if not os.path.exists(alert_file_path):
+            # Try default location
+            default_path = os.path.expandvars("$VIRTUAL_ENV/snort3/var/log/snort/alert_json.txt")
+            if os.path.exists(default_path):
+                alert_file_path = default_path
+            else:
+                print(f"[ERROR] Alert file not found: {alert_file_path}")
+                print(f"[ERROR] Also tried default location: {default_path}")
+                sys.exit(1)
+        logging.info(f"Loading model from alert.json: {alert_file_path}")
+        model = test_model_from_alerts(alert_file_path, def_budget, adv_budget)
+    elif model_name == 'suricata':
         model = test_model_suricata(def_budget, adv_budget)
     elif model_name == 'fraud':
         model = test_model_fraud(def_budget, adv_budget)
     elif model_name == 'snort':
         model = test_model_snort(def_budget, adv_budget)
+    else:
+        print(f"[ERROR] Unknown dataset: {model_name}")
+        print("Supported datasets: 'suricata', 'fraud', 'snort', 'alert.json', or path to alert.json")
+        sys.exit(1)
 
     def evaluation(exper_index):
         random_seed = exper_index

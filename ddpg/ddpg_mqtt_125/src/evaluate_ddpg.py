@@ -408,7 +408,8 @@ if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s / %(levelname)s: %(message)s', level=logging.DEBUG)
     logging.info("Experiment starts.")
     if len(sys.argv) < 8:
-        print("python ddpg.py [dataset] [defense] [def_budget] [estimate_adv_budget] [attack] [actual_adv_budget] [n_experiment]")
+        print("python evaluate_ddpg.py [dataset] [defense] [def_budget] [estimate_adv_budget] [attack] [actual_adv_budget] [n_experiment]")
+        print("  dataset: 'snort', 'fraud', 'alert.json', or path to alert.json file")
         sys.exit(1)
     model_name = sys.argv[1]
     defense = sys.argv[2]
@@ -418,17 +419,44 @@ if __name__ == "__main__":
     actual_adv_budget = int(sys.argv[6])
     n_experiment = int(sys.argv[7])
 
-    if model_name == 'snort':
+    # Check if model_name is a path to alert.json file
+    is_alert_json = False
+    alert_file_path = None
+    if model_name.endswith('.json') or os.path.exists(model_name):
+        # Use alert.json file
+        is_alert_json = True
+        alert_file_path = model_name
+        if not os.path.exists(alert_file_path):
+            # Try default location
+            default_path = os.path.expandvars("$VIRTUAL_ENV/snort3/var/log/snort/alert_json.txt")
+            if os.path.exists(default_path):
+                alert_file_path = default_path
+            else:
+                print(f"[ERROR] Alert file not found: {alert_file_path}")
+                print(f"[ERROR] Also tried default location: {default_path}")
+                sys.exit(1)
+        logging.info(f"Loading model from alert.json: {alert_file_path}")
+        simulate_model = test_model_from_alerts(alert_file_path, def_budget, estimate_adv_budget)
+        actual_model = test_model_from_alerts(alert_file_path, def_budget, actual_adv_budget)
+        # Use 'alert_json' as model_name for file paths
+        model_name_for_files = 'alert_json'
+    elif model_name == 'snort':
         simulate_model = test_model_snort(def_budget, estimate_adv_budget)
         actual_model = test_model_snort(def_budget, actual_adv_budget)
+        model_name_for_files = model_name
     elif model_name == 'fraud':
         simulate_model = test_model_fraud(def_budget, estimate_adv_budget)
         actual_model = test_model_fraud(def_budget, actual_adv_budget)
+        model_name_for_files = model_name
+    else:
+        print(f"[ERROR] Unknown dataset: {model_name}")
+        print("Supported datasets: 'snort', 'fraud', 'alert.json', or path to alert.json")
+        sys.exit(1)
     
     defense_strategies = []
     if defense == 'rl':
         for i in range(n_experiment):
-            defense_strategy = pickle.load(open("../model/converge/{}_{}_{}_do/defender-strategy-{}.pickle".format(model_name, def_budget, estimate_adv_budget, i), 'rb'))
+            defense_strategy = pickle.load(open("../model/converge/{}_{}_{}_do/defender-strategy-{}.pickle".format(model_name_for_files, def_budget, estimate_adv_budget, i), 'rb'))
             defense_strategies.append(defense_strategy)
 
     def evaluation(exper_index):
@@ -441,12 +469,12 @@ if __name__ == "__main__":
         # First load the defense profile and strategy
         if defense == 'rl':
             defense_strategy =  defense_strategies[exper_index]
-            #defense_strategy = pickle.load(open("../model/converge/{}_{}_{}_do/defender-strategy-{}.pickle".format(model_name, def_budget, estimate_adv_budget, exper_index), 'rb'))
+            #defense_strategy = pickle.load(open("../model/converge/{}_{}_{}_do/defender-strategy-{}.pickle".format(model_name_for_files, def_budget, estimate_adv_budget, exper_index), 'rb'))
             defense_profile = [test_defense_newest]
             print(len(defense_strategy)-1)
             for i in range(len(defense_strategy)-1):
                 print(i)
-                defender = DefenderOracle(model_name, simulate_model, def_budget, estimate_adv_budget, exper_index, i)
+                defender = DefenderOracle(model_name_for_files, simulate_model, def_budget, estimate_adv_budget, exper_index, i)
                 defense_profile.append(defender.agent.policy)
         elif defense == 'uniform':
             defense_strategy = [1.0]
@@ -474,9 +502,9 @@ if __name__ == "__main__":
             utility = get_payoff_mixed(actual_model, attack_profile, defense_profile, attack_strategy, defense_strategy)
         elif attack == 'greedy':
             attack_strategy = [1.0]
-            if model_name == 'fraud':
+            if model_name_for_files == 'fraud' or (not is_alert_json and model_name == 'fraud'):
                 attack_profile = [test_attack_aics]
-            elif model_name == 'snort':
+            elif model_name_for_files == 'snort' or (not is_alert_json and model_name == 'snort') or is_alert_json:
                 attack_profile = [test_attack_snort]
             utility = get_payoff_mixed(actual_model, attack_profile, defense_profile, attack_strategy, defense_strategy)
 
