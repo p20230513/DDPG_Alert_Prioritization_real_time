@@ -8,7 +8,8 @@ Each attack carries a unique payload/tag so Snort rules can differentiate them,
 allowing your RL agent to prioritize distinct alert types.
 
 Usage:
-    python3 src/scapy_traffic.py --iface lo --interval 0.5 --ratio 0.4 --continuous
+    python3 src/scapy_traffic.py --iface lo --interval 0.5 --ratio 0.4 --continuous \
+        --benign-burst 5 --attack-burst 20
 """
 
 import argparse
@@ -24,7 +25,10 @@ from scapy.all import (
 SIGNATURES = {
     "SYN_FLOOD": b"ATTACK_SYN_FLOOD_2025",
     "PORT_SCAN": b"ATTACK_PORT_SCAN_2025",
-    "SQL_INJECTION": b"ATTACK_SQL_INJECTION_2025"
+    "SQL_INJECTION": b"ATTACK_SQL_INJECTION_2025",
+    "HTTP_C2": b"ATTACK_HTTP_C2_2025",
+    "DNS_TUNNEL": b"ATTACK_DNS_TUNNEL_2025",
+    "ICMP_SMURF": b"ATTACK_ICMP_SMURF_2025"
 }
 
 # ============================================================
@@ -55,50 +59,106 @@ def attack_syn_flood(dst="127.0.0.1", count=5):
     ]
     return pkts, "SYN_FLOOD"
 
-def attack_port_scan(dst="127.0.0.1", ports=None):
+def attack_port_scan(dst="127.0.0.1", ports=None, count=10):
     tag = SIGNATURES["PORT_SCAN"]
     if ports is None:
-        ports = list(range(20, 30))
+        # Sample a wider range of ports to increase alert diversity
+        port_pool = list(range(1, 1024))
+        sample_size = min(count, len(port_pool))
+        ports = random.sample(port_pool, sample_size)
+    else:
+        # Respect user-provided ports but repeat to meet the desired count
+        if len(ports) < count:
+            reps = count // len(ports) + 1
+            ports = (ports * reps)[:count]
+        else:
+            ports = ports[:count]
+
     pkts = [
         IP(src=str(RandIP()), dst=dst) / TCP(sport=RandShort(), dport=p, flags="S") / Raw(tag)
         for p in ports
     ]
     return pkts, "PORT_SCAN"
 
-def attack_sql_injection(dst="127.0.0.1"):
+def attack_sql_injection(dst="127.0.0.1", count=1):
     tag = SIGNATURES["SQL_INJECTION"]
     payload = b"GET /login.php?user=admin' OR '1'='1 -- " + tag
-    pkt = IP(dst=dst) / TCP(dport=80, sport=RandShort(), flags="PA") / Raw(payload)
-    return pkt, "SQL_INJECTION"
+    pkts = [
+        IP(dst=dst) / TCP(dport=80, sport=RandShort(), flags="PA") / Raw(payload)
+        for _ in range(count)
+    ]
+    return pkts, "SQL_INJECTION"
+
+def attack_http_c2(dst="127.0.0.1", count=3):
+    tag = SIGNATURES["HTTP_C2"]
+    payload_template = (
+        b"POST /beacon HTTP/1.1\r\n"
+        b"Host: c2.example\r\n"
+        b"User-Agent: curl/7.79\r\n"
+        b"Content-Type: application/octet-stream\r\n"
+        b"Content-Length: 64\r\n\r\n"
+    )
+    pkts = [
+        IP(dst=dst) / TCP(dport=8080, sport=RandShort(), flags="PA") / Raw(payload_template + tag + bytes(str(i), "utf-8"))
+        for i in range(count)
+    ]
+    return pkts, "HTTP_C2"
+
+def attack_dns_tunnel(dst="127.0.0.1", count=5):
+    tag = SIGNATURES["DNS_TUNNEL"]
+    pkts = [
+        IP(dst=dst) / UDP(dport=53, sport=RandShort()) / Raw(tag + b".tunnel%d.example" % i)
+        for i in range(count)
+    ]
+    return pkts, "DNS_TUNNEL"
+
+def attack_icmp_smurf(dst="127.0.0.1", count=20):
+    tag = SIGNATURES["ICMP_SMURF"]
+    pkts = [
+        IP(src=str(RandIP()), dst=dst) / ICMP(type=8, code=0) / Raw(tag)
+        for _ in range(count)
+    ]
+    return pkts, "ICMP_SMURF"
 
 # ============================================================
 # Main Traffic Loop
 # ============================================================
-def run_traffic(iface, ratio, interval, continuous):
+def run_traffic(iface, ratio, interval, continuous, benign_burst, attack_burst):
     benign_funcs = [benign_http, benign_dns, benign_icmp]
-    attack_funcs = [attack_syn_flood, attack_port_scan, attack_sql_injection]
+    attack_funcs = [
+        attack_syn_flood,
+        attack_port_scan,
+        attack_sql_injection,
+        attack_http_c2,
+        attack_dns_tunnel,
+        attack_icmp_smurf,
+    ]
     dst_ip = "127.0.0.1" if iface == "lo" else "192.168.0.100"  # adjust per network
 
     print(f"\n[+] Starting Tagged Scapy traffic on interface: {iface}")
-    print(f"    Benign:Attack ratio = {1 - ratio:.1f}:{ratio:.1f}, interval = {interval}s\n")
+    print(f"    Benign:Attack ratio = {1 - ratio:.1f}:{ratio:.1f}, interval = {interval}s")
+    print(f"    Benign burst = {benign_burst} pkts, Attack burst = {attack_burst} pkts\n")
 
     try:
         while True:
             if random.random() < ratio:
                 atk_func = random.choice(attack_funcs)
-                pkts, atk_name = atk_func(dst_ip)
+                # Allow each attack to emit multiple packets for stronger alert signals
+                pkts, atk_name = atk_func(dst_ip, count=attack_burst)
 
                 if isinstance(pkts, list):
                     send(pkts, iface=iface, verbose=False)
-                    print(f"[ATTACK] {atk_name} ({len(pkts)} pkts) sent with tag={SIGNATURES[atk_name].decode()}")
+                    total_sent = len(pkts)
                 else:
-                    send(pkts, iface=iface, verbose=False)
-                    print(f"[ATTACK] {atk_name} sent with tag={SIGNATURES[atk_name].decode()}")
+                    send(pkts, iface=iface, count=attack_burst, verbose=False)
+                    total_sent = attack_burst
+                print(f"[ATTACK] {atk_name} ({total_sent} pkts) sent with tag={SIGNATURES[atk_name].decode()}")
             else:
                 func = random.choice(benign_funcs)
-                pkt = func(dst_ip)
-                send(pkt, iface=iface, verbose=False)
-                print(f"[BENIGN] {func.__name__}")
+                for _ in range(benign_burst):
+                    pkt = func(dst_ip)
+                    send(pkt, iface=iface, verbose=False)
+                print(f"[BENIGN] {func.__name__} x{benign_burst}")
 
             time.sleep(interval)
             if not continuous:
@@ -116,9 +176,11 @@ def main():
     parser.add_argument("--interval", type=float, default=0.5, help="Time between packets (seconds)")
     parser.add_argument("--ratio", type=float, default=0.3, help="Fraction of malicious packets [0–1]")
     parser.add_argument("--continuous", action="store_true", help="Run continuously (default: one cycle)")
+    parser.add_argument("--benign-burst", type=int, default=3, help="Number of benign packets per benign cycle")
+    parser.add_argument("--attack-burst", type=int, default=10, help="Number of attack packets per attack cycle")
     args = parser.parse_args()
 
-    run_traffic(args.iface, args.ratio, args.interval, args.continuous)
+    run_traffic(args.iface, args.ratio, args.interval, args.continuous, args.benign_burst, args.attack_burst)
 
 
 if __name__ == "__main__":

@@ -57,7 +57,10 @@ def analyze_alerts(alerts):
     attack_signature_map = {
         "ATTACK_SYN_FLOOD_2025": "SYN_FLOOD",
         "ATTACK_PORT_SCAN_2025": "PORT_SCAN",
-        "ATTACK_SQL_INJECTION_2025": "SQL_INJECTION"
+        "ATTACK_SQL_INJECTION_2025": "SQL_INJECTION",
+        "ATTACK_HTTP_C2_2025": "HTTP_C2",
+        "ATTACK_DNS_TUNNEL_2025": "DNS_TUNNEL",
+        "ATTACK_ICMP_SMURF_2025": "ICMP_SMURF",
     }
     
     for alert_data in alerts:
@@ -162,7 +165,7 @@ def create_model_from_alerts(alert_file_path, def_budget, adv_budget,
     if len(unique_attacks) == 0:
         # Create default attack types if none detected
         print("[WARN] No attack types detected, creating default attack types")
-        unique_attacks = ["SYN_FLOOD", "PORT_SCAN"]
+        unique_attacks = ["SYN_FLOOD", "PORT_SCAN", "HTTP_C2", "DNS_TUNNEL", "ICMP_SMURF"]
     
     for attack_idx, attack_name in enumerate(unique_attacks):
         # Estimate attack cost (can be based on frequency or use default)
