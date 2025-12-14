@@ -36,7 +36,7 @@ cd "$SRC_DIR"
 echo "[1/3] Launching Snort++ ..."
 sudo -E "$VENV_PATH/snort3/bin/snort" \
   -c "$VENV_PATH/snort3/etc/snort/snort.lua" \
-  -i "$SNIFF_IFACE" -A alert_json \
+ -i "$SNIFF_IFACE" -A alert_json \
   -l "$LOG_DIR" \
   > "$LOG_DIR/snort_runtime.log" 2>&1 &
 
@@ -73,7 +73,7 @@ echo "============================================================"
 
 # --- Cleanup handler ---
 cleanup() {
-    echo "🧹 Stopping all processes..."
+    echo "Stopping all processes..."
     sudo kill -9 "$SNORT_PID" "$TRAFFIC_PID" "$DDPG_PID" 2>/dev/null || true
     echo "All processes stopped."
 }
