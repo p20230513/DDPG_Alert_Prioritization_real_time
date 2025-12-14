@@ -1,0 +1,29 @@
+# SYN Flood Attack Detection
+alert tcp any any -> any 80 (msg:"SYN_FLOOD tag detected"; content:"ATTACK_SYN_FLOOD_2025"; classtype:attempted-dos; sid:2000001; rev:1; priority:1;)
+
+# SQL Injection Attack Detection
+alert tcp any any -> any 80 (msg:"SQL_INJECTION tag detected"; content:"ATTACK_SQL_INJECTION_2025"; classtype:web-application-attack; sid:2000002; rev:1; priority:1;)
+
+# HTTP C2 Communication Detection
+alert tcp any any -> any 8080 (msg:"HTTP_C2 tag detected"; content:"ATTACK_HTTP_C2_2025"; classtype:trojan-activity; sid:2000003; rev:1; priority:1;)
+
+# Port Scan Detection
+alert tcp any any -> any any (msg:"PORT_SCAN tag detected"; content:"ATTACK_PORT_SCAN_2025"; classtype:attempted-recon; sid:2000004; rev:1; priority:2;)
+
+# Brute Force Attack Detection
+alert tcp any any -> any 22 (msg:"BRUTE_FORCE tag detected"; content:"ATTACK_BRUTE_FORCE_2025"; classtype:suspicious-login; sid:2000005; rev:1; priority:1;)
+
+# DDoS Attack Detection
+alert tcp any any -> any any (msg:"DDOS tag detected"; content:"ATTACK_DDOS_2025"; classtype:attempted-dos; sid:2000006; rev:1; priority:1;)
+
+# Cross-Site Scripting (XSS) Detection
+alert tcp any any -> any 80 (msg:"XSS tag detected"; content:"ATTACK_XSS_2025"; classtype:web-application-attack; sid:2000007; rev:1; priority:1;)
+
+# Command Injection Detection
+alert tcp any any -> any any (msg:"COMMAND_INJECTION tag detected"; content:"ATTACK_COMMAND_INJECTION_2025"; classtype:web-application-attack; sid:2000008; rev:1; priority:1;)
+
+# Malware Download Detection
+alert tcp any any -> any any (msg:"MALWARE_DOWNLOAD tag detected"; content:"ATTACK_MALWARE_DOWNLOAD_2025"; classtype:trojan-activity; sid:2000009; rev:1; priority:1;)
+
+# DNS Tunneling Detection
+alert udp any any -> any 53 (msg:"DNS_TUNNELING tag detected"; content:"ATTACK_DNS_TUNNELING_2025"; classtype:protocol-command-decode; sid:2000010; rev:1; priority:2;)
