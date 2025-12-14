@@ -27,8 +27,12 @@ SIGNATURES = {
     "PORT_SCAN": b"ATTACK_PORT_SCAN_2025",
     "SQL_INJECTION": b"ATTACK_SQL_INJECTION_2025",
     "HTTP_C2": b"ATTACK_HTTP_C2_2025",
-    "DNS_TUNNEL": b"ATTACK_DNS_TUNNEL_2025",
-    "ICMP_SMURF": b"ATTACK_ICMP_SMURF_2025"
+    "DNS_TUNNELING": b"ATTACK_DNS_TUNNELING_2025",
+    "BRUTE_FORCE": b"ATTACK_BRUTE_FORCE_2025",
+    "DDOS": b"ATTACK_DDOS_2025",
+    "XSS": b"ATTACK_XSS_2025",
+    "COMMAND_INJECTION": b"ATTACK_COMMAND_INJECTION_2025",
+    "MALWARE_DOWNLOAD": b"ATTACK_MALWARE_DOWNLOAD_2025"
 }
 
 # ============================================================
@@ -104,21 +108,56 @@ def attack_http_c2(dst="127.0.0.1", count=3):
     ]
     return pkts, "HTTP_C2"
 
-def attack_dns_tunnel(dst="127.0.0.1", count=5):
-    tag = SIGNATURES["DNS_TUNNEL"]
+def attack_dns_tunneling(dst="127.0.0.1", count=5):
+    tag = SIGNATURES["DNS_TUNNELING"]
     pkts = [
         IP(dst=dst) / UDP(dport=53, sport=RandShort()) / Raw(tag + b".tunnel%d.example" % i)
         for i in range(count)
     ]
-    return pkts, "DNS_TUNNEL"
+    return pkts, "DNS_TUNNELING"
 
-def attack_icmp_smurf(dst="127.0.0.1", count=20):
-    tag = SIGNATURES["ICMP_SMURF"]
+def attack_brute_force(dst="127.0.0.1", count=5):
+    tag = SIGNATURES["BRUTE_FORCE"]
     pkts = [
-        IP(src=str(RandIP()), dst=dst) / ICMP(type=8, code=0) / Raw(tag)
+        IP(src=str(RandIP()), dst=dst) / TCP(sport=RandShort(), dport=22, flags="PA") / Raw(tag + b" attempt%d" % i)
+        for i in range(count)
+    ]
+    return pkts, "BRUTE_FORCE"
+
+def attack_ddos(dst="127.0.0.1", count=20):
+    tag = SIGNATURES["DDOS"]
+    pkts = [
+        IP(src=str(RandIP()), dst=dst) / TCP(sport=RandShort(), dport=RandShort(), flags="S") / Raw(tag)
         for _ in range(count)
     ]
-    return pkts, "ICMP_SMURF"
+    return pkts, "DDOS"
+
+def attack_xss(dst="127.0.0.1", count=1):
+    tag = SIGNATURES["XSS"]
+    payload = b"GET /page?input=<script>alert('xss')</script> HTTP/1.1\r\nHost: example.com\r\n\r\n" + tag
+    pkts = [
+        IP(dst=dst) / TCP(dport=80, sport=RandShort(), flags="PA") / Raw(payload)
+        for _ in range(count)
+    ]
+    return pkts, "XSS"
+
+def attack_command_injection(dst="127.0.0.1", count=1):
+    tag = SIGNATURES["COMMAND_INJECTION"]
+    payload = b"GET /exec?cmd=;cat /etc/passwd HTTP/1.1\r\nHost: example.com\r\n\r\n" + tag
+    pkts = [
+        IP(dst=dst) / TCP(dport=80, sport=RandShort(), flags="PA") / Raw(payload)
+        for _ in range(count)
+    ]
+    return pkts, "COMMAND_INJECTION"
+
+def attack_malware_download(dst="127.0.0.1", count=1):
+    tag = SIGNATURES["MALWARE_DOWNLOAD"]
+    payload = b"GET /malware.exe HTTP/1.1\r\nHost: malicious.com\r\n\r\n" + tag
+    pkts = [
+        IP(dst=dst) / TCP(dport=80, sport=RandShort(), flags="PA") / Raw(payload)
+        for _ in range(count)
+    ]
+    return pkts, "MALWARE_DOWNLOAD"
 
 # ============================================================
 # Main Traffic Loop
@@ -130,8 +169,12 @@ def run_traffic(iface, ratio, interval, continuous, benign_burst, attack_burst):
         attack_port_scan,
         attack_sql_injection,
         attack_http_c2,
-        attack_dns_tunnel,
-        attack_icmp_smurf,
+        attack_dns_tunneling,
+        attack_brute_force,
+        attack_ddos,
+        attack_xss,
+        attack_command_injection,
+        attack_malware_download,
     ]
     dst_ip = "127.0.0.1" if iface == "lo" else "192.168.0.100"  # adjust per network
 

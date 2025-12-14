@@ -7,6 +7,7 @@ for both static and live DDPG alert prioritization.
 
 Used by:
   - evaluate_ddpg_live.py (real-time Snort alerts)
+  - alert_json_loader.py (model creation from Snort alerts)
 """
 
 import os
@@ -14,21 +15,51 @@ import json
 import time
 
 # ==============================================================
-# 1. Define alert types (extend this as your rule set grows)
+# 1. Define alert/attack types matching local.rules and scapy_traffic.py
 # ==============================================================
 
-# These are example categories derived from Snort signatures.
-# Add or modify according to your Snort local.rules messages.
-alert_types = [
-    "TCP Traffic Detected",
-    "UDP Traffic Detected",
-    "ICMP ping Nmap",
-    "loopback IP",
-    "same src/dst IP",
-    "SQL Injection",
-    "Port Scan",
-    "SYN Flood"
+# Attack types matching Snort local.rules (10 attack types)
+attack_types = [
+    "SYN_FLOOD",
+    "SQL_INJECTION", 
+    "HTTP_C2",
+    "PORT_SCAN",
+    "BRUTE_FORCE",
+    "DDOS",
+    "XSS",
+    "COMMAND_INJECTION",
+    "MALWARE_DOWNLOAD",
+    "DNS_TUNNELING",
 ]
+
+# Legacy alert_types for backward compatibility
+alert_types = attack_types
+
+# Map Snort message patterns to attack type indices
+# Matches messages like "HTTP_C2 tag detected", "SYN_FLOOD tag detected", etc.
+MSG_TO_ATTACK_INDEX = {
+    "syn_flood tag": 0,
+    "syn_flood": 0,
+    "sql_injection tag": 1,
+    "sql_injection": 1,
+    "http_c2 tag": 2,
+    "http_c2": 2,
+    "port_scan tag": 3,
+    "port_scan": 3,
+    "brute_force tag": 4,
+    "brute_force": 4,
+    "ddos tag": 5,
+    "ddos": 5,
+    "xss tag": 6,
+    "xss": 6,
+    "cross-site scripting": 6,
+    "command_injection tag": 7,
+    "command_injection": 7,
+    "malware_download tag": 8,
+    "malware_download": 8,
+    "dns_tunneling tag": 9,
+    "dns_tunneling": 9,
+}
 
 # ==============================================================
 # 2. Map alert messages to alert-type indices
@@ -37,15 +68,25 @@ alert_types = [
 def get_alert_type_index(msg: str) -> int:
     """
     Given a Snort alert message string, return its corresponding
-    alert type index based on the alert_types list.
+    attack type index based on the attack_types list.
     """
     if not msg:
         return -1
     msg_lower = msg.lower()
-    for i, t in enumerate(alert_types):
-        if t.lower() in msg_lower:
-            return i
+    for pattern, idx in MSG_TO_ATTACK_INDEX.items():
+        if pattern in msg_lower:
+            return idx
     return -1  # unknown / not matched
+
+
+def get_attack_type_name(msg: str) -> str:
+    """
+    Given a Snort alert message string, return the attack type name.
+    """
+    idx = get_alert_type_index(msg)
+    if idx >= 0 and idx < len(attack_types):
+        return attack_types[idx]
+    return None
 
 
 # ==============================================================
