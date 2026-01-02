@@ -22,6 +22,9 @@ import scipy.stats as ss
 import sys
 import os 
 os.environ["TF_CPP_MIN_LOG_LEVEL"]='2'
+
+# Base directory for saving model files (can be set by calling code)
+MODEL_BASE_DIR = "../model"
 #####################  hyper parameters  ##############################
 
 MAX_EPISODES = config.getint('parameter', 'max_episodes')
@@ -358,17 +361,17 @@ class DefenderOracle:
             next_state = model.next_state(mode, state, delta, alpha)
             loss = next_state.U - state.U
             return (next_state, loss)
-        if not os.path.exists('../model/defender-{}-{}-{}/ddpg.ckpt.meta'.format(exper_index, iteration_index, trial_index)):
+        defender_dir = os.path.join(MODEL_BASE_DIR, "defender-{}-{}-{}".format(exper_index, iteration_index, trial_index))
+        if not os.path.exists(os.path.join(defender_dir, 'ddpg.ckpt.meta')):
             print("defend-{}-{}_{}".format(exper_index, iteration_index, trial_index))
-            cmd = "mkdir ../model/defender-{}-{}-{}".format(exper_index, iteration_index, trial_index)
-            os.system(cmd)
+            os.makedirs(defender_dir, exist_ok=True)
             self.agent.learn_from_mix(model,
                                      Model.State(model),
                                      lambda state: flatten_lists(state.N),
                                      state_update,
                                      attack_profile,
                                      attack_strategy)
-            saver.save(self.agent.ddpg.sess, "../model/defender-{}-{}-{}/ddpg.ckpt".format(exper_index, iteration_index, trial_index))        
+            saver.save(self.agent.ddpg.sess, os.path.join(defender_dir, "ddpg.ckpt"))        
         #else:
         #    saver.restore(self.agent.ddpg.sess, "../model/defender-{}/ddpg.ckpt".format(exper_index))
         self.agent.evaluate(model,
@@ -405,17 +408,17 @@ class AttackerOracle:
             next_state = model.next_state(mode, state, delta, alpha)
             loss = -1.0 * (next_state.U - state.U)
             return (next_state, loss)                        
-        if not os.path.exists('../model/attacker-{}-{}-{}/ddpg.ckpt.meta'.format(exper_index, iteration_index, trial_index)):
+        attacker_dir = os.path.join(MODEL_BASE_DIR, "attacker-{}-{}-{}".format(exper_index, iteration_index, trial_index))
+        if not os.path.exists(os.path.join(attacker_dir, 'ddpg.ckpt.meta')):
             print("attack-{}-{}_{}".format(exper_index, iteration_index, trial_index))
-            cmd = "mkdir ../model/attacker-{}-{}-{}".format(exper_index, iteration_index, trial_index)
-            os.system(cmd)
+            os.makedirs(attacker_dir, exist_ok=True)
             self.agent.learn_from_mix(model,
                             Model.State(model),
                             lambda state: flatten_state(state),                        
                             state_update,
                             defense_profile,
                             defense_strategy)
-            saver.save(self.agent.ddpg.sess, "../model/attacker-{}-{}-{}/ddpg.ckpt".format(exper_index, iteration_index, trial_index)) 
+            saver.save(self.agent.ddpg.sess, os.path.join(attacker_dir, "ddpg.ckpt")) 
         self.agent.evaluate(model,
                            Model.State(model),
                            lambda state: flatten_state(state),

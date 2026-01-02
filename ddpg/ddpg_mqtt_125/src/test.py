@@ -300,15 +300,107 @@ def test_attack_snort(model, state):
 
 def test_model_from_alerts(alert_file_path, def_budget, adv_budget):
   """
-  Create a test model from alert.json file (real-time data).
+  Create a test model from alert_json.txt file (real-time Snort data).
   This function uses alert_json_loader to build the model dynamically.
-  :param alert_file_path: Path to alert.json file
+  Uses classification and priority from Snort alerts.
+  :param alert_file_path: Path to alert_json.txt file
   :param def_budget: Defender budget
   :param adv_budget: Adversary budget
   :return: Model object
   """
   from alert_json_loader import create_model_from_alerts
   return create_model_from_alerts(alert_file_path, def_budget, adv_budget)
+
+
+def test_model_realtime(def_budget, adv_budget):
+  """
+  Create a test model for real-time DDPG with all 10 attack types from local.rules.
+  Uses predefined parameters based on attack severity.
+  :param def_budget: Defender budget
+  :param adv_budget: Adversary budget
+  :return: Model object
+  """
+  # 10 alert types corresponding to 10 attack types
+  alert_types = [
+      AlertType(1.0, PoissonDistribution(100), "t1_SYN_FLOOD"),
+      AlertType(1.0, PoissonDistribution(50), "t2_SQL_INJECTION"),
+      AlertType(1.0, PoissonDistribution(30), "t3_HTTP_C2"),
+      AlertType(1.0, PoissonDistribution(200), "t4_PORT_SCAN"),
+      AlertType(1.0, PoissonDistribution(80), "t5_BRUTE_FORCE"),
+      AlertType(1.0, PoissonDistribution(150), "t6_DDOS"),
+      AlertType(1.0, PoissonDistribution(40), "t7_XSS"),
+      AlertType(1.0, PoissonDistribution(25), "t8_COMMAND_INJECTION"),
+      AlertType(1.0, PoissonDistribution(20), "t9_MALWARE_DOWNLOAD"),
+      AlertType(1.0, PoissonDistribution(60), "t10_DNS_TUNNELING"),
+  ]
+  
+  # 10 attack types with costs, losses, and alert probabilities
+  # pr_alert: each attack primarily triggers its corresponding alert type
+  attack_types = [
+      AttackType([3.6], 80.0, [0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0], "SYN_FLOOD"),
+      AttackType([4.0], 60.0, [0, 0.9, 0, 0, 0, 0, 0, 0, 0, 0], "SQL_INJECTION"),
+      AttackType([5.5], 74.0, [0, 0, 0.9, 0, 0, 0, 0, 0, 0, 0], "HTTP_C2"),
+      AttackType([1.4], 20.0, [0, 0, 0, 0.9, 0, 0, 0, 0, 0, 0], "PORT_SCAN"),
+      AttackType([2.7], 52.0, [0, 0, 0, 0, 0.9, 0, 0, 0, 0, 0], "BRUTE_FORCE"),
+      AttackType([4.3], 135.0, [0, 0, 0, 0, 0, 0.9, 0, 0, 0, 0], "DDOS"),
+      AttackType([3.0], 40.0, [0, 0, 0, 0, 0, 0, 0.9, 0, 0, 0], "XSS"),
+      AttackType([4.5], 65.0, [0, 0, 0, 0, 0, 0, 0, 0.9, 0, 0], "COMMAND_INJECTION"),
+      AttackType([5.0], 90.0, [0, 0, 0, 0, 0, 0, 0, 0, 0.9, 0], "MALWARE_DOWNLOAD"),
+      AttackType([2.5], 45.0, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0.9], "DNS_TUNNELING"),
+  ]
+  
+  model = Model(1, alert_types, attack_types, def_budget, adv_budget)
+  return model
+
+
+def test_defense_realtime(model, state):
+  """
+  Compute investigation action for real-time alerts based on attack severity.
+  Prioritizes high-loss attacks (HTTP_C2, MALWARE_DOWNLOAD, COMMAND_INJECTION, DDOS).
+  """
+  delta = []
+  for h in range(model.horizon):
+    delta.append([0] * len(model.alert_types))
+  
+  remain_budget = model.def_budget
+  used_budget = 0.0
+  
+  # Priority order based on attack loss (higher loss = investigate first)
+  # Indices: HTTP_C2(2), MALWARE_DOWNLOAD(8), COMMAND_INJECTION(7), DDOS(5), 
+  #          SQL_INJECTION(1), SYN_FLOOD(0), XSS(6), BRUTE_FORCE(4), DNS_TUNNELING(9), PORT_SCAN(3)
+  priority_order = [2, 8, 7, 5, 1, 0, 6, 4, 9, 3]
+  
+  for idx in priority_order:
+    if remain_budget > 0 and idx < len(model.alert_types):
+      delta[0][idx] = min(
+          int(remain_budget / model.alert_types[idx].cost),
+          state.N[0][idx]
+      )
+      used_budget += delta[0][idx] * model.alert_types[idx].cost
+      remain_budget = model.def_budget - used_budget
+  
+  return delta
+
+
+def test_attack_realtime(model, state):
+  """
+  Compute attack action for real-time scenario.
+  Focuses on cost-effective attacks with high loss-to-cost ratio.
+  """
+  # Loss-to-cost ratios for each attack type
+  alpha = [0.0] * len(model.attack_types)
+  
+  for i, at in enumerate(model.attack_types):
+    ratio = at.loss[0] / at.cost
+    alpha[i] = min(ratio * 10, 1.0)  # Scale and cap at 1.0
+  
+  # Normalize to budget
+  total_cost = sum(model.attack_types[i].cost * alpha[i] for i in range(len(alpha)))
+  if total_cost > model.adv_budget:
+    factor = model.adv_budget / total_cost
+    alpha = [a * factor for a in alpha]
+  
+  return alpha
 
 if __name__ == "__main__":
   model = test_model_snort(1000, 125)

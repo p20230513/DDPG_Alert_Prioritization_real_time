@@ -6,6 +6,7 @@ from listutils import *
 from model import Model
 from test import *
 from listutils import *
+import ddpg
 from ddpg import DefenderOracle
 from ddpg import AttackerOracle
 from config import config
@@ -135,7 +136,10 @@ def update_profile(model, payoff, attack_profile,
     payoff = np.concatenate((payoff, new_payoff_row), axis=0)
     return payoff, attack_profile, defense_profile
 
-def double_oracle(model, exper_index):
+def double_oracle(model, exper_index, model_dir):
+    # Set the base directory for ddpg.py to use in this process
+    ddpg.MODEL_BASE_DIR = model_dir
+    
     #print("Initializing...")
     attack_profile = []
     defense_profile = []
@@ -183,7 +187,7 @@ def double_oracle(model, exper_index):
             attack_utility.append(attack_response[k].agent.utility)
             defense_utility.append(defense_response[k].agent.utility)
 
-        pickle.dump(defense_utility, open("../model/defender-utility-{}.pickle".format(exper_index),'wb'))
+        pickle.dump(defense_utility, open(os.path.join(model_dir, "defender-utility-{}.pickle".format(exper_index)),'wb'))
 
         # Get the best defense and attack policy
         attack_index = attack_utility.index(max(attack_utility))
@@ -194,11 +198,15 @@ def double_oracle(model, exper_index):
         # Delete the models that are not the selected one
         for k in range(N_TRIAL):
             if k != defense_index:
-                cmd = "rm -rf ../model/defender-{}-{}-{}".format(exper_index, i, k)
-                os.system(cmd)    
+                defender_path = os.path.join(model_dir, "defender-{}-{}-{}".format(exper_index, i, k))
+                if os.path.exists(defender_path):
+                    import shutil
+                    shutil.rmtree(defender_path)
             if k != attack_index:
-                cmd = "rm -rf ../model/attacker-{}-{}-{}".format(exper_index, i, k)
-                os.system(cmd)
+                attacker_path = os.path.join(model_dir, "attacker-{}-{}-{}".format(exper_index, i, k))
+                if os.path.exists(attacker_path):
+                    import shutil
+                    shutil.rmtree(attacker_path)
 
         # Update profile    
         payoff, attack_profile, defense_profile = update_profile(model, payoff, attack_profile, defense_profile, attack_policy, defense_policy)
@@ -209,12 +217,12 @@ def double_oracle(model, exper_index):
 
         if -1*utility >= attack_pure_utility and utility >= defense_pure_utility:
             # Save the mixed strategies
-            pickle.dump(defense_strategy, open("../model/defender-strategy-{}.pickle".format(exper_index),'wb'))
-            pickle.dump(attack_strategy, open("../model/attacker-strategy-{}.pickle".format(exper_index),'wb'))
+            pickle.dump(defense_strategy, open(os.path.join(model_dir, "defender-strategy-{}.pickle".format(exper_index)),'wb'))
+            pickle.dump(attack_strategy, open(os.path.join(model_dir, "attacker-strategy-{}.pickle".format(exper_index)),'wb'))
             break
         if i == MAX_ITERATION-1:
-            pickle.dump(defense_strategy, open("../model/defender-strategy-{}.pickle".format(exper_index),'wb'))
-            pickle.dump(attack_strategy, open("../model/attacker-strategy-{}.pickle".format(exper_index),'wb'))
+            pickle.dump(defense_strategy, open(os.path.join(model_dir, "defender-strategy-{}.pickle".format(exper_index)),'wb'))
+            pickle.dump(attack_strategy, open(os.path.join(model_dir, "attacker-strategy-{}.pickle".format(exper_index)),'wb'))
     return payoff_record[-1]
 
 def test_mixed_NE():
@@ -245,9 +253,16 @@ if __name__ == "__main__":
     is_alert_file = (model_name.endswith('.json') or 
                      model_name.endswith('.txt') or 
                      'alert_json' in model_name.lower() or
-                     os.path.exists(model_name))
+                     (os.path.exists(model_name) and model_name not in ['suricata', 'fraud', 'snort', 'realtime']))
     
-    if is_alert_file:
+    # Determine model_name_for_files (used in directory structure)
+    if model_name == 'realtime':
+        # Use predefined real-time model with all 10 attack types
+        from test import test_model_realtime
+        model = test_model_realtime(def_budget, adv_budget)
+        model_name_for_files = 'realtime'
+        logging.info("Using predefined real-time model with 10 attack types")
+    elif is_alert_file:
         # Use alert.json/alert_json.txt file
         alert_file_path = model_name
         if not os.path.exists(alert_file_path):
@@ -261,22 +276,33 @@ if __name__ == "__main__":
                 sys.exit(1)
         logging.info(f"Loading model from alert file: {alert_file_path}")
         model = test_model_from_alerts(alert_file_path, def_budget, adv_budget)
+        model_name_for_files = 'alert_json'
     elif model_name == 'suricata':
         model = test_model_suricata(def_budget, adv_budget)
+        model_name_for_files = model_name
     elif model_name == 'fraud':
         model = test_model_fraud(def_budget, adv_budget)
+        model_name_for_files = model_name
     elif model_name == 'snort':
         model = test_model_snort(def_budget, adv_budget)
+        model_name_for_files = model_name
     else:
         print(f"[ERROR] Unknown dataset: {model_name}")
-        print("Supported datasets: 'suricata', 'fraud', 'snort', 'alert.json', 'alert_json.txt', or path to alert file")
+        print("Supported datasets: 'suricata', 'fraud', 'snort', 'realtime', 'alert_json.txt', or path to alert file")
         sys.exit(1)
+    
+    # Create the directory structure for saving model files
+    model_dir = "../model/converge/{}_{}_{}_do".format(model_name_for_files, int(def_budget), int(adv_budget))
+    os.makedirs(model_dir, exist_ok=True)
+    
+    # Set the base directory for ddpg.py to use (ddpg is already imported at top)
+    ddpg.MODEL_BASE_DIR = model_dir
 
     def evaluation(exper_index):
         random_seed = exper_index
         np.random.seed(random_seed)
         tf.set_random_seed(random_seed)
-        do_utility = double_oracle(model, exper_index)
+        do_utility = double_oracle(model, exper_index, model_dir)
         return do_utility
 
     cores = multiprocessing.cpu_count()

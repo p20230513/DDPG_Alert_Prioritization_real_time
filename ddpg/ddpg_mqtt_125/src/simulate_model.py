@@ -98,6 +98,9 @@ def read_snort_alerts(json_alert_file):
     Tail Snort's alert_json.txt and yield structured alert events.
     This helper is used internally by evaluate_ddpg_live.py
     if you want to test alert parsing independently.
+    
+    Extracts priority and classification from Snort alert format:
+    { "timestamp": "...", "msg": "...", "class": "...", "priority": 1 }
     """
     if not os.path.exists(json_alert_file):
         print(f"[ERROR] Snort alert file not found: {json_alert_file}")
@@ -113,14 +116,33 @@ def read_snort_alerts(json_alert_file):
                 continue
             try:
                 data = json.loads(line)
-                msg = data.get("alert", {}).get("msg", "")
+                # Support both old format (nested alert) and new format (flat)
+                if "alert" in data:
+                    msg = data.get("alert", {}).get("msg", "")
+                    src = data.get("src_ip")
+                    dst = data.get("dest_ip")
+                    proto = data.get("proto")
+                    classification = data.get("alert", {}).get("class", "")
+                    priority = data.get("alert", {}).get("priority", 3)
+                else:
+                    # New Snort format: flat structure
+                    msg = data.get("msg", "")
+                    src = data.get("src_ap", "").split(":")[0] if ":" in data.get("src_ap", "") else data.get("src_ap", "")
+                    dst = data.get("dst_ap", "").split(":")[0] if ":" in data.get("dst_ap", "") else data.get("dst_ap", "")
+                    proto = data.get("proto", "")
+                    classification = data.get("class", "")
+                    priority = data.get("priority", 3)
+                
                 idx = get_alert_type_index(msg)
                 yield {
                     "alert_type_idx": idx,
                     "msg": msg,
-                    "src": data.get("src_ip"),
-                    "dst": data.get("dest_ip"),
-                    "proto": data.get("proto")
+                    "src": src,
+                    "dst": dst,
+                    "proto": proto,
+                    "classification": classification,
+                    "priority": priority,
+                    "timestamp": data.get("timestamp", "")
                 }
             except json.JSONDecodeError:
                 continue

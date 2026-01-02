@@ -2,7 +2,13 @@
 """
 alert_json_loader.py
 ---------------------------------------
-Loads and analyzes alert.json to create Model instances for training/evaluation.
+Loads and analyzes Snort alert_json.txt to create Model instances for real-time
+DDPG alert prioritization training/evaluation.
+
+Supports the new Snort alert format with classification and priority fields:
+{ "timestamp": "...", "proto": "TCP", "src_ap": "...", "dst_ap": "...",
+  "rule": "...", "action": "allow", "msg": "...", "sid": ...,
+  "class": "...", "priority": 1 }
 """
 
 import json
@@ -10,13 +16,113 @@ import os
 import numpy as np
 from collections import defaultdict, Counter
 from model import PoissonDistribution, AlertType, AttackType, Model
-from simulate_model import alert_types, get_alert_type_index
+
+# ==============================================================
+# Attack type definitions matching scapy_traffic.py and local.rules
+# ==============================================================
+ATTACK_TYPES = [
+    "SYN_FLOOD",
+    "SQL_INJECTION",
+    "HTTP_C2",
+    "PORT_SCAN",
+    "BRUTE_FORCE",
+    "DDOS",
+    "XSS",
+    "COMMAND_INJECTION",
+    "MALWARE_DOWNLOAD",
+    "DNS_TUNNELING",
+]
+
+# Map Snort message patterns to attack types
+# Matches messages like "HTTP_C2 tag detected", "SYN_FLOOD tag detected", etc.
+MSG_TO_ATTACK_MAP = {
+    "syn_flood tag": "SYN_FLOOD",
+    "syn_flood": "SYN_FLOOD",
+    "sql_injection tag": "SQL_INJECTION",
+    "sql_injection": "SQL_INJECTION",
+    "http_c2 tag": "HTTP_C2",
+    "http_c2": "HTTP_C2",
+    "port_scan tag": "PORT_SCAN",
+    "port_scan": "PORT_SCAN",
+    "brute_force tag": "BRUTE_FORCE",
+    "brute_force": "BRUTE_FORCE",
+    "ddos tag": "DDOS",
+    "ddos": "DDOS",
+    "xss tag": "XSS",
+    "xss": "XSS",
+    "cross-site scripting": "XSS",
+    "command_injection tag": "COMMAND_INJECTION",
+    "command_injection": "COMMAND_INJECTION",
+    "malware_download tag": "MALWARE_DOWNLOAD",
+    "malware_download": "MALWARE_DOWNLOAD",
+    "dns_tunneling tag": "DNS_TUNNELING",
+    "dns_tunneling": "DNS_TUNNELING",
+}
+
+# Classification to severity mapping (higher = more severe)
+# Handles both Snort formats: "Attempted Denial of Service" and "attempted-dos"
+CLASS_SEVERITY = {
+    # Standard lowercase-hyphen format
+    "attempted-dos": 3,
+    "attempted denial of service": 3,  # Snort format with spaces
+    "web-application-attack": 3,
+    "web application attack": 3,
+    "trojan-activity": 4,
+    "trojan activity": 4,
+    "attempted-recon": 2,
+    "attempted reconnaissance": 2,
+    "suspicious-login": 3,
+    "suspicious login": 3,
+    "protocol-command-decode": 2,
+    "protocol command decode": 2,
+    "attempted-admin": 4,
+    "attempted administrator": 4,
+    "misc-attack": 2,
+    "misc attack": 2,
+    "default": 1,
+}
+
+# Attack cost and loss based on classification severity and priority
+ATTACK_PARAMS = {
+    "SYN_FLOOD": {"base_cost": 80.0, "base_loss": 3.6},
+    "SQL_INJECTION": {"base_cost": 60.0, "base_loss": 4.0},
+    "HTTP_C2": {"base_cost": 74.0, "base_loss": 5.5},
+    "PORT_SCAN": {"base_cost": 20.0, "base_loss": 1.4},
+    "BRUTE_FORCE": {"base_cost": 52.0, "base_loss": 2.7},
+    "DDOS": {"base_cost": 135.0, "base_loss": 4.3},
+    "XSS": {"base_cost": 40.0, "base_loss": 3.0},
+    "COMMAND_INJECTION": {"base_cost": 65.0, "base_loss": 4.5},
+    "MALWARE_DOWNLOAD": {"base_cost": 90.0, "base_loss": 5.0},
+    "DNS_TUNNELING": {"base_cost": 45.0, "base_loss": 2.5},
+}
+
+
+def get_attack_type_from_msg(msg: str) -> str:
+    """
+    Extract attack type from Snort alert message.
+    Returns attack type name or None if not matched.
+    """
+    if not msg:
+        return None
+    msg_lower = msg.lower()
+    for pattern, attack_type in MSG_TO_ATTACK_MAP.items():
+        if pattern in msg_lower:
+            return attack_type
+    return None
+
+
+def get_attack_type_index(attack_name: str) -> int:
+    """Get index of attack type in ATTACK_TYPES list."""
+    try:
+        return ATTACK_TYPES.index(attack_name)
+    except ValueError:
+        return -1
 
 
 def load_alert_json(alert_file_path):
     """
-    Load all alerts from alert.json file.
-    Returns a list of parsed alert dictionaries.
+    Load all alerts from alert_json.txt file (Snort JSON format).
+    Returns a list of parsed alert dictionaries with extracted fields.
     """
     alerts = []
     
@@ -32,7 +138,25 @@ def load_alert_json(alert_file_path):
                 continue
             try:
                 alert_data = json.loads(line)
-                alerts.append(alert_data)
+                
+                # Extract fields from new Snort format
+                parsed = {
+                    "timestamp": alert_data.get("timestamp", ""),
+                    "proto": alert_data.get("proto", ""),
+                    "src_ap": alert_data.get("src_ap", ""),
+                    "dst_ap": alert_data.get("dst_ap", ""),
+                    "rule": alert_data.get("rule", ""),
+                    "action": alert_data.get("action", ""),
+                    "msg": alert_data.get("msg", ""),
+                    "sid": alert_data.get("sid", 0),
+                    "classification": alert_data.get("class", ""),
+                    "priority": alert_data.get("priority", 3),
+                }
+                
+                # Derive attack type from message
+                parsed["attack_type"] = get_attack_type_from_msg(parsed["msg"])
+                
+                alerts.append(parsed)
             except json.JSONDecodeError as e:
                 print(f"[WARN] Skipping invalid JSON at line {line_num}: {e}")
                 continue
@@ -44,77 +168,38 @@ def load_alert_json(alert_file_path):
 def analyze_alerts(alerts):
     """
     Analyze alerts to extract statistics for model creation.
+    Uses classification and priority from Snort alerts.
+    
     Returns:
-        - alert_type_counts: dict mapping alert type index -> count
-        - attack_type_mapping: dict mapping attack signatures -> attack type index
-        - alert_attack_correlation: dict mapping (alert_type_idx, attack_signature) -> count
+        - attack_type_counts: dict mapping attack type -> count
+        - attack_type_priorities: dict mapping attack type -> list of priorities
+        - attack_type_classes: dict mapping attack type -> list of classifications
     """
-    alert_type_counts = Counter()
-    attack_signatures = Counter()
-    alert_attack_correlation = defaultdict(int)
+    attack_type_counts = Counter()
+    attack_type_priorities = defaultdict(list)
+    attack_type_classes = defaultdict(list)
     
-    # Map attack signatures from scapy_traffic.py
-    attack_signature_map = {
-        "ATTACK_SYN_FLOOD_2025": "SYN_FLOOD",
-        "ATTACK_PORT_SCAN_2025": "PORT_SCAN",
-        "ATTACK_SQL_INJECTION_2025": "SQL_INJECTION",
-        "ATTACK_HTTP_C2_2025": "HTTP_C2",
-        "ATTACK_DNS_TUNNEL_2025": "DNS_TUNNEL",
-        "ATTACK_ICMP_SMURF_2025": "ICMP_SMURF",
-    }
-    
-    for alert_data in alerts:
-        alert_info = alert_data.get("alert", {})
-        msg = alert_info.get("msg", "") or alert_info.get("signature", "")
-        raw_payload = alert_data.get("payload", "")
-        
-        # Get alert type index
-        alert_type_idx = get_alert_type_index(msg)
-        if alert_type_idx >= 0:
-            alert_type_counts[alert_type_idx] += 1
-        
-        # Detect attack signatures from payload
-        attack_type = None
-        if raw_payload:
-            payload_str = raw_payload if isinstance(raw_payload, str) else str(raw_payload)
-            payload_bytes = payload_str.encode() if isinstance(payload_str, str) else payload_str
-            for sig_key, attack_name in attack_signature_map.items():
-                sig_bytes = sig_key.encode() if isinstance(sig_key, str) else sig_key
-                if sig_bytes in payload_bytes:
-                    attack_type = attack_name
-                    break
-        
-        # Also check message for attack keywords
-        if attack_type is None:
-            msg_lower = msg.lower()
-            if "syn flood" in msg_lower or "syn_flood" in msg_lower:
-                attack_type = "SYN_FLOOD"
-            elif "port scan" in msg_lower or "port_scan" in msg_lower:
-                attack_type = "PORT_SCAN"
-            elif "sql injection" in msg_lower or "sql_injection" in msg_lower:
-                attack_type = "SQL_INJECTION"
-        
+    for alert in alerts:
+        attack_type = alert.get("attack_type")
         if attack_type:
-            attack_signatures[attack_type] += 1
-            if alert_type_idx >= 0:
-                alert_attack_correlation[(alert_type_idx, attack_type)] += 1
+            attack_type_counts[attack_type] += 1
+            attack_type_priorities[attack_type].append(alert.get("priority", 3))
+            attack_type_classes[attack_type].append(alert.get("classification", ""))
     
-    return alert_type_counts, attack_signatures, alert_attack_correlation
+    return attack_type_counts, attack_type_priorities, attack_type_classes
 
 
 def create_model_from_alerts(alert_file_path, def_budget, adv_budget, 
-                              min_alert_count=10, default_attack_cost=50.0, 
-                              default_attack_loss=2.0):
+                              min_alert_count=1):
     """
-    Create a Model instance from alert.json file.
+    Create a Model instance from Snort alert_json.txt file.
+    Uses classification and priority from alerts to determine attack parameters.
     
     Args:
-        alert_file_path: Path to alert.json file
+        alert_file_path: Path to alert_json.txt file
         def_budget: Defender budget
         adv_budget: Adversary budget
-        min_alert_count: Minimum alerts needed to create an alert type
-        default_attack_cost: Default cost for attack types if not inferrable
-        default_attack_loss: Default loss for attack types if not inferrable
+        min_alert_count: Minimum alerts needed to include an attack type
     
     Returns:
         Model object
@@ -122,89 +207,80 @@ def create_model_from_alerts(alert_file_path, def_budget, adv_budget,
     # Load and analyze alerts
     alerts = load_alert_json(alert_file_path)
     if len(alerts) == 0:
-        raise ValueError("No alerts found in alert.json file")
+        raise ValueError("No alerts found in alert_json.txt file")
     
-    alert_type_counts, attack_signatures, alert_attack_correlation = analyze_alerts(alerts)
+    attack_type_counts, attack_type_priorities, attack_type_classes = analyze_alerts(alerts)
     
-    # Create alert types
-    # Use Poisson distribution with mean = average count per time unit
-    # For simplicity, we'll use the total count as an estimate
-    total_alerts = len(alerts)
-    num_alert_types = len(alert_type_counts)
+    # Determine which attack types were observed
+    observed_attacks = [at for at in ATTACK_TYPES if attack_type_counts.get(at, 0) >= min_alert_count]
     
+    if len(observed_attacks) == 0:
+        print("[WARN] No attack types detected, using all default attack types")
+        observed_attacks = ATTACK_TYPES.copy()
+    
+    print(f"[INFO] Observed attack types: {observed_attacks}")
+    print(f"[INFO] Attack counts: {dict(attack_type_counts)}")
+    
+    # Create alert types - one per observed attack type
+    # Each attack type generates its own alert type
     alert_type_objects = []
-    alert_type_names = []
+    for i, attack_name in enumerate(observed_attacks):
+        count = attack_type_counts.get(attack_name, 100)
+        # Poisson mean based on observed count (scaled)
+        poisson_mean = max(count, 10)
+        alert_type_objects.append(
+            AlertType(1.0, PoissonDistribution(poisson_mean), f"t{i+1}_{attack_name}")
+        )
     
-    # Create alert types based on observed alert types
-    for idx in sorted(alert_type_counts.keys()):
-        count = alert_type_counts[idx]
-        if count >= min_alert_count:
-            # Estimate Poisson mean: scale by a factor to get per-time-step rate
-            # Assuming alerts are collected over multiple time steps
-            # For now, use the count directly (can be adjusted)
-            poisson_mean = max(count / max(1, total_alerts / 100), 1.0)
-            alert_name = alert_types[idx] if idx < len(alert_types) else f"t{idx+1}"
-            alert_type_objects.append(
-                AlertType(1.0, PoissonDistribution(poisson_mean), alert_name)
-            )
-            alert_type_names.append(alert_name)
-    
-    # If no alert types found, create default ones
-    if len(alert_type_objects) == 0:
-        print("[WARN] No valid alert types found, creating default alert types")
-        for i, alert_name in enumerate(alert_types[:min(4, len(alert_types))]):
-            alert_type_objects.append(
-                AlertType(1.0, PoissonDistribution(100), alert_name)
-            )
-            alert_type_names.append(alert_name)
-    
-    # Create attack types
+    # Create attack types with parameters based on priority and classification
     attack_type_objects = []
-    unique_attacks = sorted(set(attack_signatures.keys()))
-    
-    if len(unique_attacks) == 0:
-        # Create default attack types if none detected
-        print("[WARN] No attack types detected, creating default attack types")
-        unique_attacks = ["SYN_FLOOD", "PORT_SCAN", "HTTP_C2", "DNS_TUNNEL", "ICMP_SMURF"]
-    
-    for attack_idx, attack_name in enumerate(unique_attacks):
-        # Estimate attack cost (can be based on frequency or use default)
-        attack_cost = default_attack_cost * (1.0 + attack_idx * 0.2)
+    for attack_idx, attack_name in enumerate(observed_attacks):
+        # Get base parameters
+        params = ATTACK_PARAMS.get(attack_name, {"base_cost": 50.0, "base_loss": 2.0})
+        base_cost = params["base_cost"]
+        base_loss = params["base_loss"]
         
-        # Estimate loss (can be based on severity or use default)
-        attack_loss = default_attack_loss * (1.0 + attack_idx * 0.3)
+        # Adjust based on average priority (lower priority number = higher severity)
+        priorities = attack_type_priorities.get(attack_name, [2])
+        avg_priority = np.mean(priorities) if priorities else 2
+        # Priority 1 = highest severity, multiply loss; Priority 3 = lowest
+        priority_factor = (4 - avg_priority) / 2.0  # Maps 1->1.5, 2->1.0, 3->0.5
         
-        # Create pr_alert vector: probability of triggering each alert type
-        pr_alert = []
-        total_attacks = attack_signatures[attack_name]
+        # Adjust based on classification severity
+        classes = attack_type_classes.get(attack_name, ["default"])
+        if classes:
+            # Get most common classification
+            class_counts = Counter(classes)
+            most_common_class = class_counts.most_common(1)[0][0] if class_counts else "default"
+            # Normalize classification: lowercase, replace spaces with hyphens for matching
+            normalized_class = most_common_class.lower().strip()
+            # Try exact match first, then try with spaces/hyphens normalized
+            class_severity = CLASS_SEVERITY.get(normalized_class, 
+                                                CLASS_SEVERITY.get(normalized_class.replace(" ", "-"),
+                                                                   CLASS_SEVERITY.get(normalized_class.replace("-", " "),
+                                                                                     CLASS_SEVERITY["default"])))
+        else:
+            class_severity = CLASS_SEVERITY["default"]
         
-        for alert_idx in range(len(alert_type_objects)):
-            # Count how many times this attack triggered this alert type
-            correlation_count = alert_attack_correlation.get(
-                (alert_idx, attack_name), 0
-            )
-            # Probability = correlation_count / total_attacks (if > 0)
-            if total_attacks > 0:
-                prob = min(correlation_count / total_attacks, 1.0)
-            else:
-                # Default: higher probability for first alert type
-                prob = 0.8 if alert_idx == 0 else 0.1
-            pr_alert.append(prob)
+        # Final cost and loss
+        attack_cost = base_cost * (class_severity / 3.0)
+        attack_loss = base_loss * priority_factor * (class_severity / 2.0)
         
-        # If pr_alert is empty or all zeros, set default values
-        if len(pr_alert) == 0 or sum(pr_alert) == 0:
-            pr_alert = [0.8 if i == 0 else 0.1 for i in range(len(alert_type_objects))]
+        # pr_alert: probability vector - this attack triggers its corresponding alert type
+        pr_alert = [0.0] * len(alert_type_objects)
+        pr_alert[attack_idx] = 0.9  # High probability of triggering its own alert
         
         attack_type_objects.append(
             AttackType([attack_loss], attack_cost, pr_alert, attack_name)
         )
+        
+        print(f"[INFO] Attack {attack_name}: cost={attack_cost:.2f}, loss={attack_loss:.2f}, "
+              f"avg_priority={avg_priority:.1f}, class_severity={class_severity}")
     
     # Create model
     model = Model(1, alert_type_objects, attack_type_objects, def_budget, adv_budget)
     
     print(f"[INFO] Created model with {len(alert_type_objects)} alert types and {len(attack_type_objects)} attack types")
-    print(f"[INFO] Alert types: {[at.name for at in alert_type_objects]}")
-    print(f"[INFO] Attack types: {[at.name for at in attack_type_objects]}")
     
     return model
 
@@ -212,7 +288,61 @@ def create_model_from_alerts(alert_file_path, def_budget, adv_budget,
 def test_model_from_alerts(alert_file_path, def_budget, adv_budget):
     """
     Wrapper function compatible with test_model_snort/test_model_fraud interface.
-    Creates a model from alert.json file.
+    Creates a model from alert_json.txt file.
     """
     return create_model_from_alerts(alert_file_path, def_budget, adv_budget)
+
+
+def test_defense_realtime(model, state):
+    """
+    Compute investigation action for real-time alerts based on priority.
+    Prioritizes alerts with higher severity (lower priority number).
+    """
+    delta = []
+    for h in range(model.horizon):
+        delta.append([0] * len(model.alert_types))
+    
+    remain_budget = model.def_budget
+    used_budget = 0.0
+    
+    # Get attack priorities from ATTACK_PARAMS (lower = higher priority)
+    attack_names = [at.name for at in model.attack_types]
+    
+    # Sort by base_loss (higher loss = investigate first)
+    sorted_indices = sorted(
+        range(len(attack_names)),
+        key=lambda i: ATTACK_PARAMS.get(attack_names[i], {}).get("base_loss", 0),
+        reverse=True
+    )
+    
+    for idx in sorted_indices:
+        if remain_budget > 0 and idx < len(model.alert_types):
+            delta[0][idx] = min(
+                int(remain_budget / model.alert_types[idx].cost),
+                state.N[0][idx]
+            )
+            used_budget += delta[0][idx] * model.alert_types[idx].cost
+            remain_budget = model.def_budget - used_budget
+    
+    return delta
+
+
+def test_attack_realtime(model, state):
+    """
+    Compute attack action for real-time scenario.
+    Distributes adversary budget among attacks based on cost-effectiveness.
+    """
+    alpha = []
+    for a in model.attack_types:
+        # Cost-effective attacks get higher probability
+        effectiveness = ATTACK_PARAMS.get(a.name, {}).get("base_loss", 2.0) / a.cost
+        alpha.append(min(effectiveness, 1.0))
+    
+    # Normalize to budget
+    total_cost = sum(model.attack_types[i].cost * alpha[i] for i in range(len(alpha)))
+    if total_cost > model.adv_budget:
+        factor = model.adv_budget / total_cost
+        alpha = [a * factor for a in alpha]
+    
+    return alpha
 

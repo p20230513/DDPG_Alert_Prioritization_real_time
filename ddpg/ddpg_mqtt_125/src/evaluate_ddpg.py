@@ -329,7 +329,21 @@ class DefenderOracle:
         self.mode = "defend"
         self.agent = DDPGlearning(self.mode, len(model.alert_types) * model.horizon, len(model.alert_types) * model.horizon)
         saver = tf.train.Saver()
-        saver.restore(self.agent.ddpg.sess, "../model/converge/{}_{}_{}_do/defender-{}-{}/ddpg.ckpt".format(self.model_name, def_budget, estimate_adv_budget, exper_index, iteration_index))
+        # Try main converge directory first, then fallback to model/ directly
+        checkpoint_path = "../model/converge/{}_{}_{}_do/defender-{}-{}/ddpg.ckpt".format(self.model_name, def_budget, estimate_adv_budget, exper_index, iteration_index)
+        if not os.path.exists(checkpoint_path + '.meta'):
+            # Fallback: check if it's in model/ directly (old structure without converge subdirectory)
+            # Note: old structure had defender-{exper_index}-{iteration_index}-{trial_index}, but we need defender-{exper_index}-{iteration_index}
+            # So we check for defender-{exper_index}-{iteration_index}-0 as a fallback
+            fallback_path = "../model/defender-{}-{}-0/ddpg.ckpt".format(exper_index, iteration_index)
+            if os.path.exists(fallback_path + '.meta'):
+                checkpoint_path = fallback_path
+            else:
+                # Try without trial index
+                fallback_path2 = "../model/defender-{}-{}/ddpg.ckpt".format(exper_index, iteration_index)
+                if os.path.exists(fallback_path2 + '.meta'):
+                    checkpoint_path = fallback_path2
+        saver.restore(self.agent.ddpg.sess, checkpoint_path)
         tf.reset_default_graph()
 
 class AttackerOracle:
@@ -454,15 +468,23 @@ if __name__ == "__main__":
         simulate_model = test_model_fraud(def_budget, estimate_adv_budget)
         actual_model = test_model_fraud(def_budget, actual_adv_budget)
         model_name_for_files = model_name
+    elif model_name == 'realtime':
+        simulate_model = test_model_realtime(def_budget, estimate_adv_budget)
+        actual_model = test_model_realtime(def_budget, actual_adv_budget)
+        model_name_for_files = model_name
     else:
         print(f"[ERROR] Unknown dataset: {model_name}")
-        print("Supported datasets: 'snort', 'fraud', 'alert.json', 'alert_json.txt', or path to alert file")
+        print("Supported datasets: 'snort', 'fraud', 'realtime', 'alert.json', 'alert_json.txt', or path to alert file")
         sys.exit(1)
     
     defense_strategies = []
     if defense == 'rl':
         for i in range(n_experiment):
-            defense_strategy = pickle.load(open("../model/converge/{}_{}_{}_do/defender-strategy-{}.pickle".format(model_name_for_files, def_budget, estimate_adv_budget, i), 'rb'))
+            # Try main converge directory first, then fallback to model/ directly
+            strategy_path = "../model/converge/{}_{}_{}_do/defender-strategy-{}.pickle".format(model_name_for_files, def_budget, estimate_adv_budget, i)
+            if not os.path.exists(strategy_path):
+                strategy_path = "../model/defender-strategy-{}.pickle".format(i)
+            defense_strategy = pickle.load(open(strategy_path, 'rb'))
             defense_strategies.append(defense_strategy)
 
     def evaluation(exper_index):
