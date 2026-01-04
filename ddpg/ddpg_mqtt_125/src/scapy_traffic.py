@@ -8,7 +8,7 @@ Each attack carries a unique payload/tag so Snort rules can differentiate them,
 allowing your RL agent to prioritize distinct alert types.
 
 Usage:
-    python3 src/scapy_traffic.py --iface lo --interval 0.5 --ratio 0.4 --continuous \
+    python3.7 src/scapy_traffic.py --iface lo --interval 0.5 --ratio 0.4 --continuous \
         --benign-burst 5 --attack-burst 20
 """
 
@@ -23,16 +23,16 @@ from scapy.all import (
 # Tagged Attack Signatures (for Snort to detect)
 # ============================================================
 SIGNATURES = {
-    "SYN_FLOOD": b"ATTACK_SYN_FLOOD_2025",
-    "PORT_SCAN": b"ATTACK_PORT_SCAN_2025",
-    "SQL_INJECTION": b"ATTACK_SQL_INJECTION_2025",
-    "HTTP_C2": b"ATTACK_HTTP_C2_2025",
-    "DNS_TUNNELING": b"ATTACK_DNS_TUNNELING_2025",
-    "BRUTE_FORCE": b"ATTACK_BRUTE_FORCE_2025",
-    "DDOS": b"ATTACK_DDOS_2025",
-    "XSS": b"ATTACK_XSS_2025",
-    "COMMAND_INJECTION": b"ATTACK_COMMAND_INJECTION_2025",
-    "MALWARE_DOWNLOAD": b"ATTACK_MALWARE_DOWNLOAD_2025"
+    "SYN_FLOOD": b"ATTACK_SYN_FLOOD",
+    "PORT_SCAN": b"ATTACK_PORT_SCAN",
+    "SQL_INJECTION": b"ATTACK_SQL_INJECTION",
+    "HTTP_C2": b"ATTACK_HTTP_C2",
+    "DNS_TUNNELING": b"ATTACK_DNS_TUNNELING",
+    "BRUTE_FORCE": b"ATTACK_BRUTE_FORCE",
+    "DDOS": b"ATTACK_DDOS",
+    "XSS": b"ATTACK_XSS",
+    "COMMAND_INJECTION": b"ATTACK_COMMAND_INJECTION",
+    "MALWARE_DOWNLOAD": b"ATTACK_MALWARE_DOWNLOAD"
 }
 
 # ============================================================

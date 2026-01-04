@@ -119,10 +119,22 @@ def get_attack_type_index(attack_name: str) -> int:
         return -1
 
 
-def load_alert_json(alert_file_path):
+def load_alert_json(alert_file_path, max_alerts=None, from_line=0):
     """
-    Load all alerts from alert_json.txt file (Snort JSON format).
-    Returns a list of parsed alert dictionaries with extracted fields.
+    Load alerts from alert_json.txt file (Snort JSON format).
+    
+    Args:
+        alert_file_path: Path to alert_json.txt file
+        max_alerts: Maximum number of alerts to load (None = all)
+        from_line: Start reading from this line number (0 = from beginning)
+    
+    Returns:
+        List of parsed alert dictionaries with extracted fields.
+    
+    Note:
+        - Reads file once at call time (static snapshot)
+        - For continuously updated files, call this function periodically
+        - Use from_line parameter to read only new alerts (future enhancement)
     """
     alerts = []
     
@@ -130,9 +142,28 @@ def load_alert_json(alert_file_path):
         raise FileNotFoundError(f"Alert file not found: {alert_file_path}")
     
     print(f"[INFO] Loading alerts from: {alert_file_path}")
+    if from_line > 0:
+        print(f"[INFO] Starting from line: {from_line}")
+    if max_alerts:
+        print(f"[INFO] Maximum alerts to load: {max_alerts}")
     
     with open(alert_file_path, 'r', encoding='utf-8', errors='replace') as f:
-        for line_num, line in enumerate(f, 1):
+        # Skip to starting line if specified
+        for _ in range(from_line):
+            try:
+                next(f)
+            except StopIteration:
+                break
+        
+        # Python 3.7 compatible: enumerate doesn't support start parameter
+        # So we manually track line numbers
+        line_num = from_line
+        for line in f:
+            line_num += 1
+            if max_alerts and len(alerts) >= max_alerts:
+                print(f"[INFO] Reached maximum alert limit: {max_alerts}")
+                break
+                
             line = line.strip()
             if not line:
                 continue
@@ -165,6 +196,72 @@ def load_alert_json(alert_file_path):
     return alerts
 
 
+def load_alert_json_streaming(alert_file_path, last_position=0):
+    """
+    FUTURE ENHANCEMENT: Stream alerts from continuously updated file.
+    
+    This function is designed for true real-time processing where alert_json.txt
+    is continuously updated. It tracks file position and only reads new alerts.
+    
+    Args:
+        alert_file_path: Path to alert_json.txt file
+        last_position: Last byte position read (0 = from beginning)
+    
+    Returns:
+        Tuple of (alerts_list, new_position)
+        - alerts_list: New alerts since last_position
+        - new_position: Current file position for next call
+    
+    Usage (future):
+        last_pos = 0
+        while True:
+            alerts, last_pos = load_alert_json_streaming(alert_file_path, last_pos)
+            if alerts:
+                # Process new alerts
+                update_model_with_alerts(alerts)
+            time.sleep(1)  # Check every second
+    """
+    alerts = []
+    
+    if not os.path.exists(alert_file_path):
+        return alerts, last_position
+    
+    try:
+        with open(alert_file_path, 'r', encoding='utf-8', errors='replace') as f:
+            # Seek to last position
+            f.seek(last_position)
+            
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    alert_data = json.loads(line)
+                    parsed = {
+                        "timestamp": alert_data.get("timestamp", ""),
+                        "proto": alert_data.get("proto", ""),
+                        "src_ap": alert_data.get("src_ap", ""),
+                        "dst_ap": alert_data.get("dst_ap", ""),
+                        "rule": alert_data.get("rule", ""),
+                        "action": alert_data.get("action", ""),
+                        "msg": alert_data.get("msg", ""),
+                        "sid": alert_data.get("sid", 0),
+                        "classification": alert_data.get("class", ""),
+                        "priority": alert_data.get("priority", 3),
+                    }
+                    parsed["attack_type"] = get_attack_type_from_msg(parsed["msg"])
+                    alerts.append(parsed)
+                except json.JSONDecodeError:
+                    continue
+            
+            new_position = f.tell()
+    except Exception as e:
+        print(f"[ERROR] Error reading alert file: {e}")
+        return alerts, last_position
+    
+    return alerts, new_position
+
+
 def analyze_alerts(alerts):
     """
     Analyze alerts to extract statistics for model creation.
@@ -190,7 +287,7 @@ def analyze_alerts(alerts):
 
 
 def create_model_from_alerts(alert_file_path, def_budget, adv_budget, 
-                              min_alert_count=1):
+                              min_alert_count=1, max_alerts=None, use_streaming=False):
     """
     Create a Model instance from Snort alert_json.txt file.
     Uses classification and priority from alerts to determine attack parameters.
@@ -200,12 +297,25 @@ def create_model_from_alerts(alert_file_path, def_budget, adv_budget,
         def_budget: Defender budget
         adv_budget: Adversary budget
         min_alert_count: Minimum alerts needed to include an attack type
+        max_alerts: Maximum alerts to read (None = all, for testing)
+        use_streaming: If True, use streaming loader (future enhancement)
     
     Returns:
         Model object
+    
+    Note:
+        - CURRENT: Reads file once at call time (static snapshot)
+        - FUTURE: use_streaming=True will enable continuous updates
     """
     # Load and analyze alerts
-    alerts = load_alert_json(alert_file_path)
+    if use_streaming:
+        # Future enhancement: streaming mode
+        print("[WARN] Streaming mode not yet fully implemented, using static load")
+        alerts = load_alert_json(alert_file_path, max_alerts=max_alerts)
+    else:
+        # Current implementation: static snapshot
+        alerts = load_alert_json(alert_file_path, max_alerts=max_alerts)
+    
     if len(alerts) == 0:
         raise ValueError("No alerts found in alert_json.txt file")
     
@@ -289,6 +399,9 @@ def test_model_from_alerts(alert_file_path, def_budget, adv_budget):
     """
     Wrapper function compatible with test_model_snort/test_model_fraud interface.
     Creates a model from alert_json.txt file.
+    
+    Note: This reads the file once at call time. For continuously updated files,
+    you need to call this function again to get updated models.
     """
     return create_model_from_alerts(alert_file_path, def_budget, adv_budget)
 
@@ -345,4 +458,3 @@ def test_attack_realtime(model, state):
         alpha = [a * factor for a in alpha]
     
     return alpha
-

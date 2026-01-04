@@ -329,20 +329,47 @@ class DefenderOracle:
         self.mode = "defend"
         self.agent = DDPGlearning(self.mode, len(model.alert_types) * model.horizon, len(model.alert_types) * model.horizon)
         saver = tf.train.Saver()
-        # Try main converge directory first, then fallback to model/ directly
-        checkpoint_path = "../model/converge/{}_{}_{}_do/defender-{}-{}/ddpg.ckpt".format(self.model_name, def_budget, estimate_adv_budget, exper_index, iteration_index)
-        if not os.path.exists(checkpoint_path + '.meta'):
-            # Fallback: check if it's in model/ directly (old structure without converge subdirectory)
-            # Note: old structure had defender-{exper_index}-{iteration_index}-{trial_index}, but we need defender-{exper_index}-{iteration_index}
-            # So we check for defender-{exper_index}-{iteration_index}-0 as a fallback
-            fallback_path = "../model/defender-{}-{}-0/ddpg.ckpt".format(exper_index, iteration_index)
-            if os.path.exists(fallback_path + '.meta'):
-                checkpoint_path = fallback_path
-            else:
-                # Try without trial index
-                fallback_path2 = "../model/defender-{}-{}/ddpg.ckpt".format(exper_index, iteration_index)
-                if os.path.exists(fallback_path2 + '.meta'):
-                    checkpoint_path = fallback_path2
+        
+        # Models are saved as defender-{exp}-{iter}-{trial}, need to find the correct one
+        # Try multiple paths in order of preference
+        base_dir = "../model/converge/{}_{}_{}_do".format(self.model_name, def_budget, estimate_adv_budget)
+        checkpoint_path = None
+        
+        # First try: without trial index (defender-{exp}-{iter})
+        test_path = os.path.join(base_dir, "defender-{}-{}".format(exper_index, iteration_index), "ddpg.ckpt")
+        if os.path.exists(test_path + '.meta'):
+            checkpoint_path = test_path
+        else:
+            # Second try: with trial index 0, 1, 2, ... (defender-{exp}-{iter}-{trial})
+            # N_TRIAL is typically 2, so try 0 and 1
+            for trial in range(3):  # Try up to trial 2
+                test_path = os.path.join(base_dir, "defender-{}-{}-{}".format(exper_index, iteration_index, trial), "ddpg.ckpt")
+                if os.path.exists(test_path + '.meta'):
+                    checkpoint_path = test_path
+                    break
+        
+        # Fallback: try old structure in model/ directly
+        if checkpoint_path is None:
+            for trial in range(3):
+                fallback_path = "../model/defender-{}-{}-{}/ddpg.ckpt".format(exper_index, iteration_index, trial)
+                if os.path.exists(fallback_path + '.meta'):
+                    checkpoint_path = fallback_path
+                    break
+        
+        # Final fallback: without trial index in old location
+        if checkpoint_path is None:
+            fallback_path2 = "../model/defender-{}-{}/ddpg.ckpt".format(exper_index, iteration_index)
+            if os.path.exists(fallback_path2 + '.meta'):
+                checkpoint_path = fallback_path2
+        
+        if checkpoint_path is None:
+            raise FileNotFoundError(
+                "Defender model checkpoint not found for experiment {}, iteration {}. "
+                "Tried paths in: {}/defender-{}-{}*".format(
+                    exper_index, iteration_index, base_dir, exper_index, iteration_index
+                )
+            )
+        
         saver.restore(self.agent.ddpg.sess, checkpoint_path)
         tf.reset_default_graph()
 

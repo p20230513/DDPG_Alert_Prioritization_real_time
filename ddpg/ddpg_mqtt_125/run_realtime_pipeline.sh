@@ -2,7 +2,7 @@
 # ============================================================
 # Real-Time DDPG Alert Prioritization Pipeline
 # ------------------------------------------------------------
-# Starts Snort3 + Scapy traffic generator + DDPG live evaluator
+# Starts Snort3 + Scapy traffic generator
 # ------------------------------------------------------------
 # Author: vikash Kumar
 # ============================================================
@@ -55,26 +55,16 @@ TRAFFIC_PID=$!
 echo "[INFO] Scapy traffic generator PID: $TRAFFIC_PID"
 sleep 3
 
-# --- Step 3: Start DDPG Live Evaluator ---
-echo "[3/3] Launching Real-Time DDPG Evaluator ..."
-"$VENV_PATH/bin/python3.7" "$SRC_DIR/evaluate_ddpg_live.py" \
-  --steps-per-train 50 --train-iters 1 \
-  > "$LOG_DIR/ddpg_live.log" 2>&1 &
-
-DDPG_PID=$!
-echo "[INFO] DDPG evaluator PID: $DDPG_PID"
-
 echo "============================================================"
 echo "All components launched successfully."
 echo "   - Snort Log:   $LOG_DIR/snort_runtime.log"
 echo "   - Traffic Log: $LOG_DIR/traffic_gen.log"
-echo "   - DDPG Log:    $LOG_DIR/ddpg_live.log"
 echo "============================================================"
 
 # --- Cleanup handler ---
 cleanup() {
     echo "Stopping all processes..."
-    sudo kill -9 "$SNORT_PID" "$TRAFFIC_PID" "$DDPG_PID" 2>/dev/null || true
+    sudo kill -9 "$SNORT_PID" "$TRAFFIC_PID" 2>/dev/null || true
     echo "All processes stopped."
 }
 trap cleanup EXIT
@@ -82,4 +72,3 @@ trap cleanup EXIT
 # --- Monitor ---
 echo "[MONITOR] Press Ctrl+C to stop..."
 wait
-

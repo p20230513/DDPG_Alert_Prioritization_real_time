@@ -15,7 +15,7 @@ import json
 import time
 
 # ==============================================================
-# 1. Define alert/attack types matching local.rules and scapy_traffic.py
+# Define alert/attack types matching local.rules and scapy_traffic.py
 # ==============================================================
 
 # Attack types matching Snort local.rules (10 attack types)
@@ -62,7 +62,7 @@ MSG_TO_ATTACK_INDEX = {
 }
 
 # ==============================================================
-# 2. Map alert messages to alert-type indices
+# Map alert messages to alert-type indices
 # ==============================================================
 
 def get_alert_type_index(msg: str) -> int:
@@ -90,7 +90,7 @@ def get_attack_type_name(msg: str) -> str:
 
 
 # ==============================================================
-# 3. Optional: read live Snort alerts (for testing or standalone)
+# read live Snort alerts (for testing or standalone)
 # ==============================================================
 
 def read_snort_alerts(json_alert_file):
@@ -146,11 +146,6 @@ def read_snort_alerts(json_alert_file):
                 }
             except json.JSONDecodeError:
                 continue
-
-
-# ==============================================================
-# 4. Example test (optional)
-# ==============================================================
 
 if __name__ == "__main__":
     # Example self-test (reads first 5 alerts if file exists)
