@@ -1,24 +1,24 @@
-1. Start Snort command:
-sudo LD_LIBRARY_PATH=$VIRTUAL_ENV/snort3/lib $VIRTUAL_ENV/snort3/bin/snort \
-  -c $VIRTUAL_ENV/snort3/etc/snort/snort.lua \
-  -i lo \
-  -A alert_fast \
-  -l $VIRTUAL_ENV/snort3/var/log/snort
+##set $VITUAL_ENV PATH:
+----------------------
+source ~/ddpg_workspace/AlertPrioritization/venv37/bin/activate
 
-==> For Json Output
-sudo LD_LIBRARY_PATH=$VIRTUAL_ENV/snort3/lib $VIRTUAL_ENV/snort3/bin/snort \
-  -c $VIRTUAL_ENV/snort3/etc/snort/snort.lua \
-  -i lo \
-  -A alert_json \
-  -l $VIRTUAL_ENV/snort3/var/log/snort
+## Start Snort and scapy traffic generator using below command:
+--------------------------------------------------------------
+sudo ./start_snort_scapy_gen.sh
 
 
-2. Scapy traffic generator command:
-sudo -E $VIRTUAL_ENV/bin/python3.7 scapy_traffic.py --iface lo --ratio 0.4 --continuous
+## Training:
+------------
+cd src/
+sudo -E $VIRTUAL_ENV/bin/python3.7 double_oracle.py realtime 1000 125 5 
+OR
+sudo -E $VIRTUAL_ENV/bin/python3.7 double_oracle.py alert_json.txt 1000 125 5
 
-===================================================================================
+## Evaluation:
+--------------
+cd src/
+sudo -E $VIRTUAL_ENV/bin/python3.7 evaluate_ddpg.py realtime rl 1000 125 rl 125 5 
+OR
+sudo -E $VIRTUAL_ENV/bin/python3.7 evaluate_ddpg.py alert_json.txt rl 1000 125 rl 125 5
 
-==>Use run_realtime_pipeline.sh to start 
-- snort
-- scapy traffic generator
-- evaluate_ddpg.py
+## Analyse rewards_per_attacks.csv file 
