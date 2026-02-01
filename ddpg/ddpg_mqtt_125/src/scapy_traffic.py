@@ -248,43 +248,45 @@ def run_traffic(iface, ratio, interval, continuous, benign_rate_per_min, malicio
                 if not continuous:
                     break
             
-            # sample next inter-arrival times (seconds)
-            next_benign = random.expovariate(benign_lambda) if benign_lambda else float('inf')
-            next_malicious = random.expovariate(malicious_lambda) if malicious_lambda else float('inf')
-
-            # Emit whichever arrives first (benign or malicious)
-            if next_malicious < next_benign:
-                # emit a malicious event
-                time.sleep(next_malicious)
-                atk_func = random.choice(attack_funcs)
-                pkts, atk_name = atk_func(dst_ip, count=1)
-                if isinstance(pkts, list):
-                    send(pkts, iface=iface, verbose=False)
+            # Sample next event time from merged Poisson process (benign + malicious)
+            # Combined rate = benign_lambda + malicious_lambda
+            combined_lambda = (benign_lambda or 0) + (malicious_lambda or 0)
+            if combined_lambda > 0:
+                wait_time = random.expovariate(combined_lambda)
+                time.sleep(wait_time)
+                
+                # Determine event type: benign vs malicious, weighted by rates
+                benign_prob = (benign_lambda or 0) / combined_lambda
+                if random.random() < benign_prob:
+                    # Emit benign event
+                    func = random.choice(benign_funcs)
+                    pkt = func(dst_ip)
+                    send(pkt, iface=iface, verbose=False)
+                    print(f"[BENIGN] {func.__name__}")
+                    benign_count += 1
                 else:
-                    send(pkts, iface=iface, verbose=False)
-                print(f"[ATTACK] {atk_name} sent with tag={SIGNATURES[atk_name].decode()}")
-                attack_counts[atk_name] += 1
+                    # Emit malicious event
+                    atk_func = random.choice(attack_funcs)
+                    pkts, atk_name = atk_func(dst_ip, count=1)
+                    if isinstance(pkts, list):
+                        send(pkts, iface=iface, verbose=False)
+                    else:
+                        send(pkts, iface=iface, verbose=False)
+                    print(f"[ATTACK] {atk_name} sent with tag={SIGNATURES[atk_name].decode()}")
+                    attack_counts[atk_name] += 1
 
-                # optional co-occurrence: emit 0-2 extra related alerts at same time
-                if random.random() < cooccurrence_prob:
-                    extra_count = random.randint(1, 2)
-                    for _ in range(extra_count):
-                        extra_atk = random.choice(attack_funcs)
-                        pkts2, name2 = extra_atk(dst_ip, count=1)
-                        if isinstance(pkts2, list):
-                            send(pkts2, iface=iface, verbose=False)
-                        else:
-                            send(pkts2, iface=iface, verbose=False)
-                        print(f"[ATTACK-CO] {name2} sent (co-occur)")
-                        attack_counts[name2] += 1
-            else:
-                # emit benign event
-                time.sleep(next_benign)
-                func = random.choice(benign_funcs)
-                pkt = func(dst_ip)
-                send(pkt, iface=iface, verbose=False)
-                print(f"[BENIGN] {func.__name__}")
-                benign_count += 1
+                    # optional co-occurrence: emit 0-2 extra related alerts at same time
+                    if random.random() < cooccurrence_prob:
+                        extra_count = random.randint(1, 2)
+                        for _ in range(extra_count):
+                            extra_atk = random.choice(attack_funcs)
+                            pkts2, name2 = extra_atk(dst_ip, count=1)
+                            if isinstance(pkts2, list):
+                                send(pkts2, iface=iface, verbose=False)
+                            else:
+                                send(pkts2, iface=iface, verbose=False)
+                            print(f"[ATTACK-CO] {name2} sent (co-occur)")
+                            attack_counts[name2] += 1
 
             if not continuous:
                 break
