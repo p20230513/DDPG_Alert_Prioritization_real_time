@@ -6,7 +6,15 @@
 --SNORT_DIR = os.getenv('VIRTUAL_ENV') .. '/snort3'
 
 -- Paths
-SNORT_DIR = '/home/vikash/ddpg_workspace/AlertPrioritization/venv37/snort3'
+-- Prefer VIRTUAL_ENV when available so this config is portable
+local venv = os.getenv('VIRTUAL_ENV')
+if venv ~= nil and venv ~= '' then
+    SNORT_DIR = venv .. '/snort3'
+else
+    -- Fallback to previous hardcoded path if VIRTUAL_ENV is not set
+    SNORT_DIR = '/home/vikash/ddpg_workspace/AlertPrioritization/venv37/snort3'
+end
+
 RULE_PATH = SNORT_DIR .. '/etc/snort/rules'
 ---------------------------------------------------------------------------
 -- Network Variables (MUST be defined before ips)

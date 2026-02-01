@@ -48,7 +48,7 @@ sleep 3
 echo "[2/3] Launching Scapy Traffic Generator ..."
 sudo -E "$VENV_PATH/bin/python3.7" "$SRC_DIR/scapy_traffic.py" \
   --iface "$SNIFF_IFACE" --ratio "$RATIO" --continuous \
-  --benign-burst 5 --attack-burst 20
+  --benign-rate 12 --malicious-rate 0.5 --cooccurrence-prob 0.05 --duration-minutes 30 \
   > "$LOG_DIR/traffic_gen.log" 2>&1 &
 
 TRAFFIC_PID=$!
