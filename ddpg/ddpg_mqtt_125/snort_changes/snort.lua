@@ -98,7 +98,7 @@ classifications = {
 ---------------------------------------------------------------------------
 ips =
 {
-    enable_builtin_rules = true,
+    enable_builtin_rules = false,
 
     variables =
     {

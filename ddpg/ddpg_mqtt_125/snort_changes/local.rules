@@ -27,3 +27,37 @@ alert tcp any any -> any any (msg:"MALWARE_DOWNLOAD tag detected"; content:"ATTA
 
 # DNS Tunneling Detection
 alert udp any any -> any 53 (msg:"DNS_TUNNELING tag detected"; content:"ATTACK_DNS_TUNNELING_2025"; classtype:protocol-command-decode; sid:2000010; rev:1; priority:2;)
+
+# ============================================================
+# Benign Traffic Detection Rules (for proper tracking)
+# ============================================================
+
+# Benign HTTP Detection
+alert tcp any any -> any 80 (msg:"BENIGN_HTTP tag detected"; content:"BENIGN_HTTP_2025"; classtype:misc-activity; sid:2001001; rev:1; priority:3;)
+
+# Benign DNS Detection
+alert udp any any -> any 53 (msg:"BENIGN_DNS tag detected"; content:"BENIGN_DNS_2025"; classtype:misc-activity; sid:2001002; rev:1; priority:3;)
+
+# Benign ICMP Detection
+alert icmp any any -> any any (msg:"BENIGN_ICMP tag detected"; content:"BENIGN_ICMP_2025"; classtype:misc-activity; sid:2001003; rev:1; priority:3;)
+
+# Benign SSH Detection
+alert tcp any any -> any 22 (msg:"BENIGN_SSH tag detected"; content:"BENIGN_SSH_2025"; classtype:misc-activity; sid:2001004; rev:1; priority:3;)
+
+# Benign TLS Detection
+alert tcp any any -> any 443 (msg:"BENIGN_TLS tag detected"; content:"BENIGN_TLS_2025"; classtype:misc-activity; sid:2001005; rev:1; priority:3;)
+
+# Benign SMTP Detection
+alert tcp any any -> any 25 (msg:"BENIGN_SMTP tag detected"; content:"BENIGN_SMTP_2025"; classtype:misc-activity; sid:2001006; rev:1; priority:3;)
+
+# Benign NTP Detection
+alert udp any any -> any 123 (msg:"BENIGN_NTP tag detected"; content:"BENIGN_NTP_2025"; classtype:misc-activity; sid:2001007; rev:1; priority:3;)
+
+# Benign FTP Detection
+alert tcp any any -> any 21 (msg:"BENIGN_FTP tag detected"; content:"BENIGN_FTP_2025"; classtype:misc-activity; sid:2001008; rev:1; priority:3;)
+
+# Benign LDAP Detection
+alert tcp any any -> any 389 (msg:"BENIGN_LDAP tag detected"; content:"BENIGN_LDAP_2025"; classtype:misc-activity; sid:2001009; rev:1; priority:3;)
+
+# Benign MySQL Detection
+alert tcp any any -> any 3306 (msg:"BENIGN_MYSQL tag detected"; content:"BENIGN_MYSQL_2025"; classtype:misc-activity; sid:2001010; rev:1; priority:3;)

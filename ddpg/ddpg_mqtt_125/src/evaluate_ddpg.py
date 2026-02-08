@@ -267,10 +267,21 @@ class DDPGlearning:
         #logging.info("DDPG test starts.")
         total_reward = 0
         op_actions = np.random.choice(op_profile, TEST_EPISODES, p=op_strategy)
-        f = open('rewards_per_attack.csv', 'a')
+        # determine output path for rewards CSV, default to script directory to avoid cwd issues
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        csv_path = os.path.join(script_dir, 'rewards_per_attack.csv')
+        logging.info(f"Writing rewards to {csv_path}")
+        f = open(csv_path, 'a')
         writer = csv.writer(f)            
         for i in range(TEST_EPISODES):
             global_state = initial_state
+            
+            # Pre-initialize cumulative loss U with some penalty representing pre-existing risks
+            # This ensures the defender has meaningful choices from step 1 (non-zero rewards)
+            initial_state_with_loss = Model.State(global_state.model)
+            initial_state_with_loss.U = sum(at.loss[0] for at in initial_state_with_loss.attack_types) * 0.25
+            global_state = initial_state_with_loss
+            
             state = np.array(state_observe(global_state),dtype=np.float32)
             episode_reward = 0.0
             op_action = op_actions[i]
@@ -294,6 +305,7 @@ class DDPGlearning:
             self.utility = ave_reward
             logging.info("RL utililty: {}".format(ave_reward))
         f.close()
+        logging.info(f"Finished writing rewards to {csv_path}")
 
     def policy(self, model, state):
         """

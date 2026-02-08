@@ -33,6 +33,20 @@ ATTACK_TYPES = [
     "DNS_TUNNELING",
 ]
 
+# Benign type definitions (1:1 mapping with attacks)
+BENIGN_TYPES = [
+    "BENIGN_HTTP",
+    "BENIGN_DNS",
+    "BENIGN_ICMP",
+    "BENIGN_SSH",
+    "BENIGN_TLS",
+    "BENIGN_SMTP",
+    "BENIGN_NTP",
+    "BENIGN_FTP",
+    "BENIGN_LDAP",
+    "BENIGN_MYSQL",
+]
+
 # Map Snort message patterns to attack types
 # Matches messages like "HTTP_C2 tag detected", "SYN_FLOOD tag detected", etc.
 MSG_TO_ATTACK_MAP = {
@@ -57,6 +71,30 @@ MSG_TO_ATTACK_MAP = {
     "malware_download": "MALWARE_DOWNLOAD",
     "dns_tunneling tag": "DNS_TUNNELING",
     "dns_tunneling": "DNS_TUNNELING",
+}
+
+# Map Snort message patterns to benign types
+MSG_TO_BENIGN_MAP = {
+    "benign_http tag": "BENIGN_HTTP",
+    "benign_http": "BENIGN_HTTP",
+    "benign_dns tag": "BENIGN_DNS",
+    "benign_dns": "BENIGN_DNS",
+    "benign_icmp tag": "BENIGN_ICMP",
+    "benign_icmp": "BENIGN_ICMP",
+    "benign_ssh tag": "BENIGN_SSH",
+    "benign_ssh": "BENIGN_SSH",
+    "benign_tls tag": "BENIGN_TLS",
+    "benign_tls": "BENIGN_TLS",
+    "benign_smtp tag": "BENIGN_SMTP",
+    "benign_smtp": "BENIGN_SMTP",
+    "benign_ntp tag": "BENIGN_NTP",
+    "benign_ntp": "BENIGN_NTP",
+    "benign_ftp tag": "BENIGN_FTP",
+    "benign_ftp": "BENIGN_FTP",
+    "benign_ldap tag": "BENIGN_LDAP",
+    "benign_ldap": "BENIGN_LDAP",
+    "benign_mysql tag": "BENIGN_MYSQL",
+    "benign_mysql": "BENIGN_MYSQL",
 }
 
 # Classification to severity mapping (higher = more severe)
@@ -96,6 +134,20 @@ ATTACK_PARAMS = {
     "DNS_TUNNELING": {"base_cost": 45.0, "base_loss": 2.5},
 }
 
+# Benign alert parameters (low cost, zero loss since they're not attacks)
+BENIGN_PARAMS = {
+    "BENIGN_HTTP": {"base_cost": 1.0, "base_loss": 0.0},
+    "BENIGN_DNS": {"base_cost": 1.0, "base_loss": 0.0},
+    "BENIGN_ICMP": {"base_cost": 0.5, "base_loss": 0.0},
+    "BENIGN_SSH": {"base_cost": 1.0, "base_loss": 0.0},
+    "BENIGN_TLS": {"base_cost": 1.0, "base_loss": 0.0},
+    "BENIGN_SMTP": {"base_cost": 1.0, "base_loss": 0.0},
+    "BENIGN_NTP": {"base_cost": 0.5, "base_loss": 0.0},
+    "BENIGN_FTP": {"base_cost": 1.0, "base_loss": 0.0},
+    "BENIGN_LDAP": {"base_cost": 1.0, "base_loss": 0.0},
+    "BENIGN_MYSQL": {"base_cost": 1.0, "base_loss": 0.0},
+}
+
 
 def get_attack_type_from_msg(msg: str) -> str:
     """
@@ -105,10 +157,23 @@ def get_attack_type_from_msg(msg: str) -> str:
     if not msg:
         return None
     msg_lower = msg.lower()
+    # Check attack types first
     for pattern, attack_type in MSG_TO_ATTACK_MAP.items():
         if pattern in msg_lower:
             return attack_type
+    # Check benign types
+    for pattern, benign_type in MSG_TO_BENIGN_MAP.items():
+        if pattern in msg_lower:
+            return benign_type
     return None
+
+
+def get_benign_type_index(benign_name: str) -> int:
+    """Get index of benign type in BENIGN_TYPES list."""
+    try:
+        return BENIGN_TYPES.index(benign_name)
+    except ValueError:
+        return -1
 
 
 def get_attack_type_index(attack_name: str) -> int:
@@ -345,8 +410,9 @@ def create_model_from_alerts(alert_file_path, def_budget, adv_budget,
     # Create attack types with parameters based on priority and classification
     attack_type_objects = []
     for attack_idx, attack_name in enumerate(observed_attacks):
-        # Get base parameters
-        params = ATTACK_PARAMS.get(attack_name, {"base_cost": 50.0, "base_loss": 2.0})
+        # Get base parameters (check both ATTACK_PARAMS and BENIGN_PARAMS)
+        params = ATTACK_PARAMS.get(attack_name, 
+                                  BENIGN_PARAMS.get(attack_name, {"base_cost": 50.0, "base_loss": 2.0}))
         base_cost = params["base_cost"]
         base_loss = params["base_loss"]
         

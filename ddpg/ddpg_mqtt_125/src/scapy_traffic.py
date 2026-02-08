@@ -26,6 +26,7 @@ from scapy.all import (
 # Tagged Attack Signatures (for Snort to detect)
 # ============================================================
 SIGNATURES = {
+    # Attack tags (10 types)
     "SYN_FLOOD": b"ATTACK_SYN_FLOOD_2025",
     "PORT_SCAN": b"ATTACK_PORT_SCAN_2025",
     "SQL_INJECTION": b"ATTACK_SQL_INJECTION_2025",
@@ -35,7 +36,18 @@ SIGNATURES = {
     "DDOS": b"ATTACK_DDOS_2025",
     "XSS": b"ATTACK_XSS_2025",
     "COMMAND_INJECTION": b"ATTACK_COMMAND_INJECTION_2025",
-    "MALWARE_DOWNLOAD": b"ATTACK_MALWARE_DOWNLOAD_2025"
+    "MALWARE_DOWNLOAD": b"ATTACK_MALWARE_DOWNLOAD_2025",
+    # Benign tags (10 types - 1:1 mapping with attacks)
+    "BENIGN_HTTP": b"BENIGN_HTTP_2025",
+    "BENIGN_DNS": b"BENIGN_DNS_2025",
+    "BENIGN_ICMP": b"BENIGN_ICMP_2025",
+    "BENIGN_SSH": b"BENIGN_SSH_2025",
+    "BENIGN_TLS": b"BENIGN_TLS_2025",
+    "BENIGN_SMTP": b"BENIGN_SMTP_2025",
+    "BENIGN_NTP": b"BENIGN_NTP_2025",
+    "BENIGN_FTP": b"BENIGN_FTP_2025",
+    "BENIGN_LDAP": b"BENIGN_LDAP_2025",
+    "BENIGN_MYSQL": b"BENIGN_MYSQL_2025"
 }
 
 # ============================================================
@@ -45,42 +57,74 @@ def benign_http(dst="127.0.0.1"):
     # Randomize path and user-agent to increase variety
     path = random.choice(["/", "/index.html", "/home", "/login.php", "/api/data", "/search?q=test"]) 
     user_agent = random.choice([b"curl/7.79", b"Mozilla/5.0", b"Wget/1.20", b"python-requests/2.25"]) 
-    payload = b"GET " + path.encode() + b" HTTP/1.1\r\nHost: example.com\r\nUser-Agent: " + user_agent + b"\r\n\r\n"
+    tag = SIGNATURES["BENIGN_HTTP"]
+    payload = b"GET " + path.encode() + b" HTTP/1.1\r\nHost: example.com\r\nUser-Agent: " + user_agent + b"\r\n\r\n" + tag
     pkt = IP(dst=dst) / TCP(dport=80, sport=RandShort(), flags="PA") / Raw(payload)
     return pkt
 
 def benign_dns(dst="127.0.0.1"):
     # Randomize DNS query names to simulate benign DNS traffic
     qname = random.choice([b"example.com", b"api.example.com", b"cdn.example.com", b"login.example.com"])
-    pkt = IP(dst=dst) / UDP(dport=53, sport=RandShort()) / Raw(b"\x12\x34 " + qname)
+    tag = SIGNATURES["BENIGN_DNS"]
+    pkt = IP(dst=dst) / UDP(dport=53, sport=RandShort()) / Raw(b"\x12\x34 " + qname + tag)
     return pkt
 
 def benign_icmp(dst="127.0.0.1"):
-    pkt = IP(dst=dst) / ICMP()
+    tag = SIGNATURES["BENIGN_ICMP"]
+    pkt = IP(dst=dst) / ICMP() / Raw(tag)
     return pkt
 
 def benign_ssh(dst="127.0.0.1"):
     # Simulate SSH keepalive / connection attempt
-    payload = b"SSH-2.0-OpenSSH_7.4\r\n"
+    tag = SIGNATURES["BENIGN_SSH"]
+    payload = b"SSH-2.0-OpenSSH_7.4\r\n" + tag
     pkt = IP(dst=dst) / TCP(dport=22, sport=RandShort(), flags="PA") / Raw(payload)
     return pkt
 
 def benign_tls(dst="127.0.0.1"):
     # Simulate TLS ClientHello-like bytes (not full handshake)
-    payload = b"\x16\x03\x01\x00\x2e\x01\x00\x00\x2a\x03\x03" + b"\x00" * 20
+    tag = SIGNATURES["BENIGN_TLS"]
+    payload = b"\x16\x03\x01\x00\x2e\x01\x00\x00\x2a\x03\x03" + b"\x00" * 20 + tag
     pkt = IP(dst=dst) / TCP(dport=443, sport=RandShort(), flags="PA") / Raw(payload)
     return pkt
 
 def benign_smtp(dst="127.0.0.1"):
     # Simulate SMTP HELO/EHLO
-    payload = b"HELO example.com\r\n"
+    tag = SIGNATURES["BENIGN_SMTP"]
+    payload = b"HELO example.com\r\n" + tag
     pkt = IP(dst=dst) / TCP(dport=25, sport=RandShort(), flags="PA") / Raw(payload)
     return pkt
 
 def benign_ntp(dst="127.0.0.1"):
     # Simple NTP request-like payload
-    payload = b"\x1b" + b"\x00" * 47
+    tag = SIGNATURES["BENIGN_NTP"]
+    payload = b"\x1b" + b"\x00" * 47 + tag
     pkt = IP(dst=dst) / UDP(dport=123, sport=RandShort()) / Raw(payload)
+    return pkt
+
+def benign_ftp(dst="127.0.0.1"):
+    # Simulate FTP command (RETR, STOR, LIST, etc.)
+    tag = SIGNATURES["BENIGN_FTP"]
+    cmd = random.choice([b"LIST\r\n", b"RETR file.txt\r\n", b"STOR file.bin\r\n", b"DELE old.dat\r\n"])
+    payload = cmd + tag
+    pkt = IP(dst=dst) / TCP(dport=21, sport=RandShort(), flags="PA") / Raw(payload)
+    return pkt
+
+def benign_ldap(dst="127.0.0.1"):
+    # Simulate LDAP query (simple bind request)
+    tag = SIGNATURES["BENIGN_LDAP"]
+    # LDAP BindRequest PDU structure (simplified)
+    payload = b"\x30\x0c\x02\x01\x01\x60\x07\x02\x01\x03\x04\x00\x04\x00" + tag
+    pkt = IP(dst=dst) / TCP(dport=389, sport=RandShort(), flags="PA") / Raw(payload)
+    return pkt
+
+def benign_mysql(dst="127.0.0.1"):
+    # Simulate MySQL client query
+    tag = SIGNATURES["BENIGN_MYSQL"]
+    queries = [b"SELECT * FROM users;", b"UPDATE table SET col=1;", b"INSERT INTO data VALUES(1);", b"DELETE FROM temp;"]
+    query = random.choice(queries)
+    payload = query + tag
+    pkt = IP(dst=dst) / TCP(dport=3306, sport=RandShort(), flags="PA") / Raw(payload)
     return pkt
 
 # ============================================================
@@ -194,7 +238,7 @@ def attack_malware_download(dst="127.0.0.1", count=1):
 # Main Traffic Loop with 30-min windowing and attack counting
 # ============================================================
 def run_traffic(iface, ratio, interval, continuous, benign_rate_per_min, malicious_rate_per_min, cooccurrence_prob=0.05, duration_minutes=30):
-    benign_funcs = [benign_http, benign_dns, benign_icmp, benign_ssh, benign_tls, benign_smtp, benign_ntp]
+    benign_funcs = [benign_http, benign_dns, benign_icmp, benign_ssh, benign_tls, benign_smtp, benign_ntp, benign_ftp, benign_ldap, benign_mysql]
     attack_funcs = [
         attack_syn_flood,
         attack_port_scan,

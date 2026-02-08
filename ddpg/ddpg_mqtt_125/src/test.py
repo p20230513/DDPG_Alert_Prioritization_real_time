@@ -11,8 +11,8 @@ EPSILON = 0.00001
 
 def test_model_fraud(def_budget, adv_budget):
   """
-  Creat a test model by using the credit fraud dataset (H = 1, |T| = 6, |A| = 6).
-  :return: Model object. 
+  Create a test model by using the credit fraud dataset (H = 1, |T| = 6, |A| = 6).
+  :return: Model object.
   """
   alert_types =  [AlertType(1.0, PoissonDistribution(10), "t1"), 
                   AlertType(1.0, PoissonDistribution(47), "t4"),
@@ -22,35 +22,41 @@ def test_model_fraud(def_budget, adv_budget):
                   AttackType([16.03], 2, [0.0, 0.45*0.9, 0.94*0.9], "a6")]
   model = Model(1, alert_types, attack_types, def_budget, adv_budget)
   return model
-"""
+
 def test_model_snort(def_budget, adv_budget):
-  
-  alert_types =  [AlertType(1.0, PoissonDistribution(215900), "t1"), 
-                  AlertType(1.0, PoissonDistribution(100), "t2"),
-                  AlertType(1.0, PoissonDistribution(2200), "t3"),
-                  AlertType(1.0, PoissonDistribution(1200), "t4")]
-  attack_types = [AttackType([1.4], 80.0, [816,0,0,0], "a1"),
-                  AttackType([1.4], 60.0, [0,259,0,0], "a2"),
-                  AttackType([4.3], 20.0, [0,92,0,0], "a3"),
-                  AttackType([5.5], 74.0, [0,0,141,0], "a4")]
-  #model = Model(1, alert_types, attack_types, 1000.0, 120.0)
-  model = Model(1, alert_types, attack_types, def_budget, adv_budget)
-  return model
-"""
-def test_model_snort(def_budget, adv_budget):
-  
-  alert_types =  [AlertType(1.0, PoissonDistribution(10274000), "t1"), 
-                  AlertType(1.0, PoissonDistribution(0), "t2")]
-  attack_types = [AttackType([3.6], 135.0, [862,0], "a1"),
-                  AttackType([1.4], 25.0, [18785,281], "a2")]
-  #model = Model(1, alert_types, attack_types, 1000.0, 120.0)
+  """
+  Test model using 30-minute Snort calibration data.
+  Alert types based on Snort classifications (7 types from 30-min data).
+  Attack types: 10 individual attacks with CVSS-based loss values.
+  Data source: /home/vikash/ddpg_workspace/ddpg_AlertPrioritization/ddpg/ddpg_mqtt_125/alert_stats_30mins_calibration.py
+  """
+  alert_types =  [AlertType(1.0, PoissonDistribution(383), "t1"),   # t1 = Misc Activity (benign)
+                  AlertType(1.0, PoissonDistribution(5), "t2"),     # t2 = Attempted Denial of Service
+                  AlertType(1.0, PoissonDistribution(1), "t3"),     # t3 = Attempted Information Leak
+                  AlertType(1.0, PoissonDistribution(6), "t4"),     # t4 = Web Application Attack
+                  AlertType(1.0, PoissonDistribution(5), "t5"),     # t5 = A Network Trojan was Detected
+                  AlertType(1.0, PoissonDistribution(1), "t6"),     # t6 = Generic Protocol Command Decode
+                  AlertType(1.0, PoissonDistribution(2), "t7")]     # t7 = An Attempted Login Using a Suspicious Username
+
+  attack_types = [AttackType([8.6], 120.0, [0,3,0,0,0,0,0], "a1"),         # a1 = SYN_FLOOD (CVSS 8.6, DoS)
+                  AttackType([8.6], 120.0, [0,2,0,0,0,0,0], "a2"),         # a2 = DDOS (CVSS 8.6, DoS)
+                  AttackType([5.3], 25.0, [0,0,1,0,0,0,0], "a3"),          # a3 = PORT_SCAN (CVSS 5.3, InfoLeak)
+                  AttackType([9.0], 74.0, [0,0,0,3,0,0,0], "a4"),          # a4 = SQL_INJECTION (CVSS 9.0, WebApp-CRITICAL)
+                  AttackType([9.0], 74.0, [0,0,0,1,0,0,0], "a5"),          # a5 = XSS (CVSS 9.0, WebApp)
+                  AttackType([9.0], 74.0, [0,0,0,2,0,0,0], "a6"),          # a6 = COMMAND_INJECTION (CVSS 9.0, WebApp)
+                  AttackType([8.8], 135.0, [0,0,0,0,3,0,0], "a7"),         # a7 = HTTP_C2 (CVSS 8.8, Trojan)
+                  AttackType([8.8], 135.0, [0,0,0,0,2,0,0], "a8"),         # a8 = MALWARE_DOWNLOAD (CVSS 8.8, Trojan)
+                  AttackType([7.3], 52.0, [0,0,0,0,0,1,0], "a9"),          # a9 = DNS_TUNNELING (CVSS 7.3)
+                  AttackType([7.5], 80.0, [0,0,0,0,0,0,2], "a10")]         # a10 = BRUTE_FORCE (CVSS 7.5)
+
   model = Model(1, alert_types, attack_types, def_budget, adv_budget)
   return model
 
+
 def test_model_suricata(def_budget, adv_budget):
   """
-  Creat a test model by using the IDS dataset (H = 1, |T| = 7, |A| = 7).
-  :return: Model object. 
+  Create a test model by using the IDS dataset (H = 1, |T| = 7, |A| = 7).
+  :return: Model object.
   """
   alert_types =  [AlertType(1.0, PoissonDistribution(7200), "t1"), 
                   AlertType(1.0, PoissonDistribution(44100), "t2"),
@@ -66,9 +72,9 @@ def test_model_suricata(def_budget, adv_budget):
                   AttackType([1.4], 52.0, [710,2,862,12,0,80,600], "a5"),
                   AttackType([1.4], 80.0, [138,0,320,30,0,0,0], "a6"),
                   AttackType([2.7], 62.0, [0,0,6,0,0,0,0], "a7")]
-  #model = Model(1, alert_types, attack_types, 1000.0, 120.0)
   model = Model(1, alert_types, attack_types, def_budget, adv_budget)
   return model
+
 
 def test_defense_action(model, state):
   """
@@ -82,6 +88,7 @@ def test_defense_action(model, state):
   for h in range(model.horizon):
     delta.append([min(int(budget / model.alert_types[t].cost), state.N[h][t]) for t in range(len(model.alert_types))])
   return delta
+
 
 def test_defense_newest(model, state):
   """
@@ -99,12 +106,14 @@ def test_defense_newest(model, state):
       delta.append([0] * len(model.alert_types))
   return delta
 
+
 def test_defense_proportion(model, state):
   delta = []
   n_alerts = np.array(state.N[0]) + 0.000001
   ratio = n_alerts/np.sum(n_alerts)
   delta.append([min(int(model.def_budget*ratio[t] / model.alert_types[t].cost), state.N[0][t]) for t in range(len(model.alert_types))])
   return delta	
+
 
 def test_defense_fraud(model, state):
   """
@@ -123,59 +132,10 @@ def test_defense_fraud(model, state):
       delta.append([0] * len(model.alert_types))
   return delta
 
+
 def test_defense_snort(model, state):
   """
   Compute an investigation action based on the built-in priorities of Suricata
-  :param model: Model of the alert prioritization problem (i.e., Model object).
-  :param state: State of the alert prioritization problem (i.e., Model.State object).
-  :return: Number of alerts to investigate. Two-dimensional array, delta[h][t] is the number of alerts to investigate of type t raised h time steps ago.
-  """
-  delta = []
-  for h in range(model.horizon):
-    delta.append([0]*len(model.alert_types))
-  remain_budget = model.def_budget
-  used_budget = 0.0
-  #alert_priority = np.array([2,1,2,3,3,1,3,1,1,1])
-  alert_priority = np.array([3,2])
-  for i in range(np.unique(alert_priority).shape[0]):
-    if remain_budget > 0:
-      index_priority = np.where(alert_priority == i+1)[0]
-      for j in index_priority:
-        delta[0][j] = min(int(remain_budget / index_priority.shape[0] / model.alert_types[j].cost), state.N[0][j])
-        used_budget += delta[0][j] * model.alert_types[j].cost
-      remain_budget = model.def_budget - used_budget
-    else:
-      break
-  return delta
-
-def test_defense_suricata(model, state):
-  """
-  Compute an investigation action based on the built-in priorities of Suricata
-  :param model: Model of the alert prioritization problem (i.e., Model object).
-  :param state: State of the alert prioritization problem (i.e., Model.State object).
-  :return: Number of alerts to investigate. Two-dimensional array, delta[h][t] is the number of alerts to investigate of type t raised h time steps ago.
-  """
-  delta = []
-  for h in range(model.horizon):
-    delta.append([0]*len(model.alert_types))
-  remain_budget = model.def_budget
-  used_budget = 0.0
-  #alert_priority = np.array([2,1,2,3,3,1,3,1,1,1])
-  alert_priority = np.array([2,1,2,3,3,1,3])
-  for i in range(np.unique(alert_priority).shape[0]):
-    if remain_budget > 0:
-      index_priority = np.where(alert_priority == i+1)[0]
-      for j in index_priority:
-        delta[0][j] = min(int(remain_budget / index_priority.shape[0] / model.alert_types[j].cost), state.N[0][j])
-        used_budget += delta[0][j] * model.alert_types[j].cost
-      remain_budget = model.def_budget - used_budget
-    else:
-      break
-  return delta
-
-def test_defense_aics(model, state):
-  """
-  Compute an investigation action based on the aics implementation
   :param model: Model of the alert prioritization problem (i.e., Model object).
   :param state: State of the alert prioritization problem (i.e., Model.State object).
   :return: Number of alerts to investigate. Two-dimensional array, delta[h][t] is the number of alerts to investigate of type t raised h time steps ago.
@@ -212,6 +172,7 @@ def test_defense_aics(model, state):
     else:
       break
   return delta
+
 
 def test_defense_icde(model, state):
   """
@@ -253,28 +214,22 @@ def test_defense_icde(model, state):
       break
   return delta
 
+
 def test_attack_action(model, state):
   """
-  Compute a basic attack action (i.e., probability of mouting attacks), which distributes the adversary's budget uniformly among attack types.
+  Compute a basic attack action (i.e., probability of mounting attacks), which distributes the adversary's budget uniformly among attack types.
   :param model: Model of the alert prioritization problem (i.e., Model object).
   :param state: State of the alert prioritization problem (i.e., Model.State object).
   :return: Probability of mounting attacks. One-dimensional array, alpha[a] is the probability of mounting an attack of type a.
   """
-  #budget = model.adv_budget / len(model.attack_types)
   budget = model.adv_budget / len(model.attack_types)
   alpha = [min(budget / a.cost, 1) for a in model.attack_types]
   return alpha
+
 def test_attack_action1(model, state):
-  """
-  Compute a basic attack action (i.e., probability of mouting attacks), which distributes the adversary's budget uniformly among attack types.
-  :param model: Model of the alert prioritization problem (i.e., Model object).
-  :param state: State of the alert prioritization problem (i.e., Model.State object).
-  :return: Probability of mounting attacks. One-dimensional array, alpha[a] is the probability of mounting an attack of type a.
-  """
-  #budget = model.adv_budget / len(model.attack_types)
-  #budget = model.adv_budget / len(model.attack_types)
   alpha = [0,1]
   return alpha
+
 def test_attack_aics(model, state):
   if model.def_budget == 10 or model.def_budget == 20:
     if model.adv_budget == 2:
@@ -289,12 +244,10 @@ def test_attack_aics(model, state):
   return alpha
 
 def test_attack_ids(model, state):
-  #alpha = [0, 1, 0.54, 1, 0, 0, 0]
   alpha = [0, 0, 1, 1, 0, 0 , 0.419]
   return alpha
 
 def test_attack_snort(model, state):
-  #alpha = [1, 1, 0.54, 0]
   alpha = [0.4,1]
   return alpha
 
@@ -320,7 +273,6 @@ def test_model_realtime(def_budget, adv_budget):
   :param adv_budget: Adversary budget
   :return: Model object
   """
-  # 10 alert types corresponding to 10 attack types
   alert_types = [
       AlertType(1.0, PoissonDistribution(100), "t1_SYN_FLOOD"),
       AlertType(1.0, PoissonDistribution(50), "t2_SQL_INJECTION"),
@@ -333,9 +285,6 @@ def test_model_realtime(def_budget, adv_budget):
       AlertType(1.0, PoissonDistribution(20), "t9_MALWARE_DOWNLOAD"),
       AlertType(1.0, PoissonDistribution(60), "t10_DNS_TUNNELING"),
   ]
-  
-  # 10 attack types with costs, losses, and alert probabilities
-  # pr_alert: each attack primarily triggers its corresponding alert type
   attack_types = [
       AttackType([3.6], 80.0, [0.9, 0, 0, 0, 0, 0, 0, 0, 0, 0], "SYN_FLOOD"),
       AttackType([4.0], 60.0, [0, 0.9, 0, 0, 0, 0, 0, 0, 0, 0], "SQL_INJECTION"),
@@ -348,7 +297,6 @@ def test_model_realtime(def_budget, adv_budget):
       AttackType([5.0], 90.0, [0, 0, 0, 0, 0, 0, 0, 0, 0.9, 0], "MALWARE_DOWNLOAD"),
       AttackType([2.5], 45.0, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0.9], "DNS_TUNNELING"),
   ]
-  
   model = Model(1, alert_types, attack_types, def_budget, adv_budget)
   return model
 
@@ -361,15 +309,9 @@ def test_defense_realtime(model, state):
   delta = []
   for h in range(model.horizon):
     delta.append([0] * len(model.alert_types))
-  
   remain_budget = model.def_budget
   used_budget = 0.0
-  
-  # Priority order based on attack loss (higher loss = investigate first)
-  # Indices: HTTP_C2(2), MALWARE_DOWNLOAD(8), COMMAND_INJECTION(7), DDOS(5), 
-  #          SQL_INJECTION(1), SYN_FLOOD(0), XSS(6), BRUTE_FORCE(4), DNS_TUNNELING(9), PORT_SCAN(3)
   priority_order = [2, 8, 7, 5, 1, 0, 6, 4, 9, 3]
-  
   for idx in priority_order:
     if remain_budget > 0 and idx < len(model.alert_types):
       delta[0][idx] = min(
@@ -378,7 +320,6 @@ def test_defense_realtime(model, state):
       )
       used_budget += delta[0][idx] * model.alert_types[idx].cost
       remain_budget = model.def_budget - used_budget
-  
   return delta
 
 
@@ -387,32 +328,17 @@ def test_attack_realtime(model, state):
   Compute attack action for real-time scenario.
   Focuses on cost-effective attacks with high loss-to-cost ratio.
   """
-  # Loss-to-cost ratios for each attack type
   alpha = [0.0] * len(model.attack_types)
-  
   for i, at in enumerate(model.attack_types):
     ratio = at.loss[0] / at.cost
-    alpha[i] = min(ratio * 10, 1.0)  # Scale and cap at 1.0
-  
-  # Normalize to budget
+    alpha[i] = min(ratio * 10, 1.0)
   total_cost = sum(model.attack_types[i].cost * alpha[i] for i in range(len(alpha)))
   if total_cost > model.adv_budget:
     factor = model.adv_budget / total_cost
     alpha = [a * factor for a in alpha]
-  
   return alpha
 
 if __name__ == "__main__":
   model = test_model_snort(1000, 125)
   state = Model.State(model)
-  #print(test_defense_action(model, state))
-  #print(test_attack_action(model, state))
   i = 0
-  while i < 10:
-    print('#############################')
-    print(i)
-    print('state:', state)
-    print('attacker:', test_attack_action(model, state))
-    state = model.next_state('old', state, test_defense_action, test_attack_action)
-    i += 1
-
